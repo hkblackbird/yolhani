@@ -60,7 +60,8 @@ for _c in CITIES.values():
     for _p in _c["places"]:
         if CLOSED.search(_p["name"]):
             continue
-        if DESCRIPTIVE.search(_p["name"].strip()):
+        _p["name"] = re.sub(r"\s+\d{5}\b.*$", "", _p["name"]).strip()          # "… 07571 Demre Antalya Türkiye"
+        if DESCRIPTIVE.search(_p["name"].strip()) or (_p["tk"] == "kamp" and re.search(r"\. \w|\bvar$", _p["name"])):
             desc = _p["name"].strip()
             _p["name"] = f'{_p["ilce"] or _c["name"]} kamp noktası'
             if desc.lower() not in ("camp", "camping", "big!", "peter", "n camp"):
@@ -324,10 +325,8 @@ def place_card(p, city, rel="../"):
         tel = f'<a class="act" href="tel:+90{digits}">{icon("phone")}{e(p["tel"])}</a>'
     m = re.search(r"~([\d.]+) TL", p["note"])
     note = "" if m else p["note"]
-    fix = feedback("duzelt", p["name"], city, p["ilce"], f"{BASE}/{PAGE[p['id']]}" if p["id"] in PAGE else "")
-    text = " ".join([p["name"], p["ilce"], p["addr"], label]).lower()
     geo = f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' if p["lat"] else ""
-    return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}" data-q="{e(text)}"{geo}
+    return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}"{geo}
   data-name="{e(p["name"])}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
   <div class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h3>{f'<a href="{rel}{PAGE[p["id"]]}">{e(p["name"])}</a>' if p["id"] in PAGE else e(p["name"])}</h3>
   <p class="meta">{e(label)}{f" · {e(p['ilce'])}" if p["ilce"] else ""}</p></div>
@@ -336,7 +335,7 @@ def place_card(p, city, rel="../"):
   {f'<p class="note">{e(note)}</p>' if note else ""}
   {f'<p class="addr">{icon("pin")}{e(p["addr"])}</p>' if p["addr"] else ""}
   <div class="acts">{tel}<a class="act" href="{e(p["map"])}" rel="noopener">{icon("route")}Yol tarifi</a>
-  <a class="fix" href="{e(fix)}" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  {f'<a class="fix" href="{rel}{PAGE[p["id"]]}">Ayrıntılar</a>' if p["id"] in PAGE else ""}</div>
 </li>"""
 
 
@@ -371,6 +370,7 @@ FILTER_JS = """<script>
   const q = document.getElementById("f-q"), sel = document.getElementById("f-ilce"), kim = document.getElementById("f-kim"), out = document.getElementById("f-n");
   if (!q) return;
   const items = [...document.querySelectorAll(".place")];
+  for (const li of items) li.dataset.q = li.textContent.replace(/\\s+/g, " ").toLocaleLowerCase("tr");
   const allow = { herkes: ["open"], sivil: ["open", "prio"] };
   const run = () => {
     const t = q.value.trim().toLocaleLowerCase("tr"), d = sel.value, k = allow[kim.value]; let n = 0;
@@ -380,6 +380,7 @@ FILTER_JS = """<script>
     }
     for (const s of document.querySelectorAll(".isub, section.group")) s.hidden = !s.querySelector(".place:not([hidden])");
     out.textContent = (t || d || k) ? n + " yer gösteriliyor" : "";
+    document.body.classList.toggle("filtering", !!(t || d || k));
     if (window.yolhaniMap) window.yolhaniMap();
   };
   for (const el of [q, sel, kim]) el.addEventListener("input", run);
@@ -496,7 +497,7 @@ def city_page(key, c):
         {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
         {"@context": "https://schema.org", "@type": "ItemList", "name": f"{loc} ucuz konaklama", "numberOfItems": n,
-         "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, name)} for i, p in enumerate(places[:200])]},
+         "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, name)} for i, p in enumerate(places[:60])]},
     ]
     body = f"""<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>{e(name)}</nav>
 <section class="hero city">
@@ -826,7 +827,7 @@ def ilce_page(key, c, ilce):
           {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
             {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
           {"@context": "https://schema.org", "@type": "ItemList", "name": f"{iname} ucuz konaklama", "numberOfItems": n,
-           "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, city)} for i, p in enumerate(items[:200])]}]
+           "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, city)} for i, p in enumerate(items[:60])]}]
     body = f"""<nav class="crumbs" aria-label="Konum"><a href="../../">Yolhanı</a><span>›</span><a href="../">{e(city)}</a><span>›</span>{e(iname)}</nav>
 <section class="hero city">
   <div class="hero-text">
@@ -990,7 +991,7 @@ def group_page(key, c, gk):
             {"@type": "ListItem", "position": 3, "name": label, "item": f"{BASE}/{path}"}]},
           {"@context": "https://schema.org", "@type": "ItemList", "name": f"{name} {lab_l}", "numberOfItems": n,
            "itemListElement": [{"@type": "ListItem", "position": i + 1, "url": f"{BASE}/{PAGE[p['id']]}" if p["id"] in PAGE else f"{BASE}/{key}/#p-{p['id']}",
-                                "name": p["name"]} for i, p in enumerate(items[:200])]}]
+                                "name": p["name"]} for i, p in enumerate(items[:60])]}]
     facts = [("Kimler kalabilir?", ti.get("whoText", "")), ("Nasıl ayırtılır?", ti.get("book", "")), ("İpucu", ti.get("tip", ""))]
     body = f"""<nav class="crumbs" aria-label="Konum"><a href="../../">Yolhanı</a><span>›</span><a href="../">{e(name)}</a><span>›</span>{e(label)}</nav>
 <section class="hero city">

@@ -139,3 +139,26 @@ document.addEventListener("click", async ev => {
     const s = b.querySelector("span"), old = s.textContent; s.textContent = "Bağlantı kopyalandı"; setTimeout(() => s.textContent = old, 2000);
   } catch {}
 });
+
+// Uzun listeler kısaltılır; arama ya da süzgeç açıkken hepsi görünür (body.filtering).
+// İlçelere bölünmüş bölümlerde her ilçenin ilk 4 yeri, bölünmemişlerde ilk 12 yer gösterilir.
+const collapse = (box, cards, keep, label) => {
+  if (cards.length <= keep + 2) return;
+  cards.slice(keep).forEach(li => li.classList.add("extra"));
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "btn ghost-d showall"; b.textContent = label(cards.length - keep, cards.length);
+  b.addEventListener("click", () => { box.classList.remove("collapsed"); b.remove(); });
+  box.classList.add("collapsed"); box.append(b);
+};
+for (const sec of document.querySelectorAll("section.group")) {
+  const subs = sec.querySelectorAll(".isub");
+  if (subs.length) for (const sub of subs) collapse(sub, [...sub.querySelectorAll(".place")], 4, n => `+${n} yer daha`);
+  else collapse(sec, [...sec.querySelectorAll(".place")], 12, (n, all) => `Tümünü göster (${all})`);
+}
+// Bağlantıyla gizli bir karta gelinirse bölümü aç
+const openTarget = () => {
+  const el = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  const sec = el && el.closest && el.closest(".collapsed");
+  if (sec && el.classList.contains("extra")) { sec.classList.remove("collapsed"); sec.querySelector(".showall")?.remove(); el.scrollIntoView(); }
+};
+openTarget(); addEventListener("hashchange", openTarget);

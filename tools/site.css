@@ -346,3 +346,11 @@ section.group[hidden] { display: none; }
   .ilceler .ilist { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -20px; padding-inline: 20px; }
   .ilceler .ilist a { flex: none; }
 }
+
+/* Uzun bölümler: ilk 12 yer, sonra "Tümünü göster" */
+body:not(.filtering) .collapsed .place.extra { display: none; }
+body.filtering .showall { display: none; }
+.showall { justify-self: center; margin-top: 4px; }
+.isub .showall { justify-self: start; padding: 8px 14px; font-size: .9rem; }
+.fix { font-weight: 600; color: var(--green); text-decoration: none; }
+.fix:hover { text-decoration: underline; color: var(--green); }
