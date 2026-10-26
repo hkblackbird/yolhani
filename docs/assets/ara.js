@@ -35,7 +35,7 @@
     return { cities, places, ilceler: [...ilceler].map(([k, n]) => { const [ci, il] = k.split("|"); return [idx.c[+ci], il, n]; }) };
   }
   const cityUrl = c => root + c[0] + "/";
-  const ilceUrl = (c, il) => cityUrl(c) + "?ilce=" + encodeURIComponent(il);
+  const ilceUrl = (c, il) => (idx.i && idx.i[idx.c.indexOf(c) + "|" + il]) ? root + idx.i[idx.c.indexOf(c) + "|" + il] : cityUrl(c) + "?ilce=" + encodeURIComponent(il);
   const placeUrl = p => root + (p[5] || idx.c[p[1]][0] + "/#p-" + p[4]);
 
   for (const form of document.querySelectorAll("form.q")) {

@@ -69,6 +69,65 @@ for _c in CITIES.values():
         _p["tel"] = tel_fmt(_p["tel"])
         keep.append(_p)
     _c["places"] = keep
+
+# İlçe düzeltmesi: büyükşehirlerde "Merkez" ilçe yoktur; diğer illerde merkez ilçe "Merkez", "Nevşehir Merkez" ya da
+# il adıyla yazılmış, tek ada indirilir. Boş ilçeler önce adresten, sonra en yakın kayıttan (10 km içinde) bulunur.
+BUYUKSEHIR = set("Adana Ankara Antalya Aydın Balıkesir Bursa Denizli Diyarbakır Erzurum Eskişehir Gaziantep Hatay İstanbul İzmir "
+                 "Kahramanmaraş Kayseri Kocaeli Konya Malatya Manisa Mardin Mersin Muğla Ordu Sakarya Samsun Şanlıurfa Tekirdağ "
+                 "Trabzon Van".split())
+ADDR_WORDS = re.compile(r"mah|cad|sok|bulvar|no\b|no:|blok|kat|\d|yolu|köyü|mevki|km|sitesi|kampüs|yerleşke", re.I)
+
+
+def km(a, b):
+    return math.hypot((a["lat"] - b["lat"]) * 111, (a["lon"] - b["lon"]) * 111 * math.cos(math.radians(a["lat"])))
+
+
+# Adres ve addan çıkarılamayan, ilçesi kesin bilinen birkaç kayıt (ad başlangıcı → ilçe)
+ILCE_ELLE = {"Bursa TEDAŞ": "Osmangazi", "Pazaryolu Öğretmenevi": "Pazaryolu", "Mahmudiye Öğretmenevi": "Mahmudiye",
+             "DHMİ Hatay Havalimanı": "Antakya", "DSİ KOS Şube": "Kazımkarabekir", "Kazımkarabekir Öğretmen": "Kazımkarabekir",
+             "Ondokuz Mayıs Öğretmenevi": "19 Mayıs"}
+
+for _c in CITIES.values():
+    city, bs = _c["name"], _c["name"] in BUYUKSEHIR
+    merkez = {city, f"{city} Merkez", "Merkez", f"{city} merkez"}
+    known = {q["ilce"] for q in _c["places"] if q["ilce"] and q["ilce"] not in merkez}
+    for _p in _c["places"]:
+        v = (_p["ilce"] or "").strip()
+        elle = next((i for k, i in ILCE_ELLE.items() if _p["name"].startswith(k)), None)
+        if elle:
+            _p["ilce"] = elle
+            continue
+        if v in merkez and not bs:
+            _p["ilce"] = "Merkez"
+            continue
+        if v and v not in merkez:
+            continue
+        found = ""
+        addr = _p["addr"] or ""
+        # "Akkışla Öğretmenevi", "Şişli Öğretmenevi ve ASO": ad ilçeyle başlıyorsa
+        m = re.match(r"(.+?) (Öğretmenevi|Polisevi|Uygulama Oteli)", _p["name"])
+        lead = m.group(1).strip() if m else ""
+        named = [k for k in known if re.match(rf"{re.escape(k)}\b", _p["name"])]
+        hits = [(addr.rfind(k), k) for k in known if re.search(rf"(^|[\s,/.-]){re.escape(k)}([\s,/.]|$)", addr)]
+        if named:
+            found = max(named, key=len)
+        elif hits:
+            found = max(hits)[1]
+        elif lead and len(lead.split()) == 1 and lead not in merkez and not ADDR_WORDS.search(lead) and _p["tk"] == "ogr":
+            found = lead
+        elif re.search(r"\b\d{5} ([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)", addr) and re.search(r"\b\d{5} ([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)", addr).group(1) not in merkez:
+            found = re.search(r"\b\d{5} ([A-ZÇĞİÖŞÜ][a-zçğıöşü]+)", addr).group(1)
+        elif addr:
+            last = addr.split(",")[-1].strip()
+            if last and len(last.split()) <= 2 and not ADDR_WORDS.search(last) and last not in merkez:
+                found = last
+        if not found and _p["lat"]:
+            near = [(km(_p, q), q["ilce"]) for q in _c["places"] if q["lat"] and q["ilce"] and q["ilce"] not in merkez and q is not _p]
+            if near and min(near)[0] < 10:
+                found = min(near)[1]
+        if not found and not bs and (not addr or re.search(rf"Merkez|{re.escape(city)}", addr) or v in merkez):
+            found = "Merkez"
+        _p["ilce"] = found
 KM_TYPES = {t["k"]: t for t in data["kmTypes"]}
 MAP = data["map"]
 LABELS = data["labels"]
@@ -319,7 +378,7 @@ FILTER_JS = """<script>
       const ok = (!d || li.dataset.ilce === d) && (!t || li.dataset.q.includes(t)) && (!k || k.includes(li.dataset.who));
       li.hidden = !ok; n += ok;
     }
-    for (const s of document.querySelectorAll("section.group")) s.hidden = !s.querySelector(".place:not([hidden])");
+    for (const s of document.querySelectorAll(".isub, section.group")) s.hidden = !s.querySelector(".place:not([hidden])");
     out.textContent = (t || d || k) ? n + " yer gösteriliyor" : "";
     if (window.yolhaniMap) window.yolhaniMap();
   };
@@ -376,8 +435,8 @@ def city_page(key, c):
     cnt = {k: len(v) for k, v in by_group.items()}
     kamu = cnt["misafirhane"] + cnt["belediye"]
     free = sum(1 for p in by_group["kamp"] if p["note"].startswith("Ücretsiz"))
-    ilceler = Counter(p["ilce"] for p in places if p["ilce"] and p["ilce"] != "Merkez")
-    top = ilceler.most_common(3)
+    ilceler = Counter(p["ilce"] for p in places if p["ilce"])
+    top = [(i, k) for i, k in ilceler.most_common(4) if i != "Merkez"][:3]
 
     title = f"{loc} Ucuz Konaklama: Öğretmenevi, Misafirhane, Kamp | Yolhanı"
     desc = (f"{loc} {n} ucuz konaklama yeri: {cnt['ogretmenevi']} öğretmenevi, {kamu} kamu misafirhanesi (DSİ, PTT, Karayolları…), "
@@ -426,9 +485,9 @@ def city_page(key, c):
                      'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
         more = f'<a class="more" href="{GSLUG[gk]}/">Ayrı sayfada aç →</a>' if (key, gk) in GPAGE else ""
         secs.append(f'<section class="group" id="{gk}"><div class="ghead"><h2>{e(h)} <small>{len(items)}</small></h2>{more}</div>{pnote}'
-                    f'<ul class="places">{"".join(place_card(p, name) for p in items)}</ul></section>')
+                    f'{cards_by_ilce(items, key, c, "../")}</section>')
 
-    opts = "".join(f'<option value="{e(i)}">{e(i)} ({k})</option>' for i, k in sorted(ilceler.items(), key=lambda kv: tr_key(kv[0])))
+    opts = "".join(f'<option value="{e(i)}">{e(ilce_name(c, i))} ({k})</option>' for i, k in sorted(ilceler.items(), key=lambda kv: tr_key(kv[0])))
     near = "".join(f'<li><a href="../{SLUG[m]}/">{e(m)}</a> <span>{COUNT[SLUG[m]]}</span></li>' for m in neighbours(name))
     ld = [
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
@@ -453,6 +512,7 @@ def city_page(key, c):
     <div class="near"><h2>Yakındaki iller</h2><ul>{near}</ul></div>
   </aside>
   <div class="content">
+    <nav class="ilceler" aria-label="İlçeler"><h2>İlçeler</h2><p class="ilist">{ilce_links(key, c, "../")}</p></nav>
     <form class="filters" id="filters" hidden role="search" onsubmit="return false">
       <label class="field">{icon("search")}<input id="f-q" type="search" placeholder="{e(name)} içinde ara: ad, ilçe, adres…" aria-label="Bu ilde ara"></label>
       <select id="f-ilce" aria-label="İlçe"><option value="">Tüm ilçeler</option>{opts}</select>
@@ -599,7 +659,9 @@ def search_index():
     ti = {t: i for i, t in enumerate(types)}
     ps = [[p["name"], ci, p["ilce"], ti[label(p)], p["id"], PAGE.get(p["id"], "")]
           for ci, (_, c) in enumerate(cities) for p in sorted(c["places"], key=lambda p: (tr_key(p["ilce"]), tr_key(p["name"])))]
-    return json.dumps({"c": [[k, c["name"], COUNT[k]] for k, c in cities], "t": types, "p": ps}, ensure_ascii=False, separators=(",", ":"))
+    ci = {k: i for i, (k, _) in enumerate(cities)}
+    ilces = {f"{ci[k]}|{i}": u for (k, i), u in IPAGE.items()}
+    return json.dumps({"c": [[k, c["name"], COUNT[k]] for k, c in cities], "t": types, "p": ps, "i": ilces}, ensure_ascii=False, separators=(",", ":"))
 
 
 # ---------- Yer sayfaları ve il-tür sayfaları ----------
@@ -637,10 +699,15 @@ def extras(p):
     return out
 
 
+IPAGE = {}       # (il, ilçe) → "il/ilce-slug/"
 PAGE = {}        # yer id → "il/slug/"
 GPAGE = {}       # (il, grup) → "il/grup-slug/"
 for key, c in CITIES.items():
     used = set(GSLUG.values())
+    for ilce, n in Counter(p["ilce"] for p in c["places"] if p["ilce"]).items():
+        if n >= 3 and slugify(ilce) not in used:
+            IPAGE[(key, ilce)] = f"{key}/{slugify(ilce)}/"
+            used.add(slugify(ilce))
     for p in sorted(c["places"], key=lambda p: tr_key(p["name"])):
         if not (p["tel"] or p["addr"] or extras(p).get("web")):
             continue
@@ -698,12 +765,100 @@ MAP_JS = """<script>
 </script>"""
 
 
+def ilce_name(c, ilce):
+    return f"{c['name']} Merkez" if ilce == "Merkez" else ilce or "İlçe belirtilmemiş"
+
+
+def cards_by_ilce(items, key, c, rel):
+    """Uzun listeleri ilçe başlıklarına böler; kısa listeler tek parça kalır."""
+    ilce_order = sorted({p["ilce"] for p in items}, key=lambda i: (not i, tr_key(i)))
+    if len(items) <= 12 or len(ilce_order) < 2 or len(items) / len(ilce_order) < 3:
+        return f'<ul class="places">{"".join(place_card(p, c["name"], rel) for p in items)}</ul>'
+    out = []
+    for i in ilce_order:
+        sub = [p for p in items if p["ilce"] == i]
+        link = f'<a href="{rel}{IPAGE[(key, i)]}">{e(ilce_name(c, i))}</a>' if (key, i) in IPAGE else e(ilce_name(c, i))
+        out.append(f'<div class="isub"><h3 class="ih">{link} <small>{len(sub)}</small></h3>'
+                   f'<ul class="places">{"".join(place_card(p, c["name"], rel) for p in sub)}</ul></div>')
+    return "".join(out)
+
+
+def ilce_links(key, c, rel, skip=None):
+    cnt = Counter(p["ilce"] for p in c["places"] if p["ilce"])
+    return " ".join(
+        f'<a href="{rel}{IPAGE[(key, i)]}">{e(ilce_name(c, i))} <span>{n}</span></a>' if (key, i) in IPAGE
+        else f'<a href="{rel}{key}/?ilce={quote(i)}">{e(ilce_name(c, i))} <span>{n}</span></a>'
+        for i, n in sorted(cnt.items(), key=lambda kv: tr_key(kv[0])) if i != skip)
+
+
+def ilce_page(key, c, ilce):
+    city, iname = c["name"], ilce_name(c, ilce)
+    path = IPAGE[(key, ilce)]
+    items = [p for p in c["places"] if p["ilce"] == ilce]
+    n = len(items)
+    cnt = Counter(GROUP_OF.get(p["tk"], GROUPS[4])[0] for p in items)
+    parts = [f"{cnt[g[0]]} {g[2].lower()}" for g in GROUPS if cnt[g[0]]]
+    intro = f"{iname} ({city}) içinde otel yerine kalabileceğin {n} yer: " + ", ".join(parts) + "."
+    tels = sum(1 for p in items if p["tel"])
+    if tels:
+        intro += f" {tels} tanesinin telefonu listede."
+    toc, secs = [], []
+    for gk, label, short, ic, _ in GROUPS:
+        g_items = sorted([p for p in items if GROUP_OF.get(p["tk"], GROUPS[4])[0] == gk], key=lambda p: tr_key(p["name"]))
+        if not g_items:
+            continue
+        toc.append(f'<a href="#{gk}"><span class="ticon t-{ic}">{icon(ic)}</span>{e(label)}<b>{len(g_items)}</b></a>')
+        secs.append(f'<section class="group" id="{gk}"><h2>{e(iname)} {e(label[0].lower() + label[1:])} <small>{len(g_items)}</small></h2>'
+                    f'<ul class="places">{"".join(place_card(p, city, "../../") for p in g_items)}</ul></section>')
+    title = f"{iname} Ucuz Konaklama: {n} Yer ({', '.join(g[2] for g in GROUPS if cnt[g[0]])[:60]}) | {city} | Yolhanı"
+    if ilce != "Merkez":
+        title = f"{iname} Ucuz Konaklama, {city}: {n} Yer | Pansiyon, Kamp, Misafirhane | Yolhanı"
+    desc = f"{iname}, {city}: {n} ucuz konaklama yeri ({', '.join(parts)}). Adres, telefon, kimlerin kalabildiği ve yol tarifi."
+    faq = [(f"{iname} içinde ucuz nerede kalınır?", intro + " Gitmeden önce telefonla arayıp boş yer ve fiyatı sor.")]
+    if cnt["ogretmenevi"]:
+        faq.append((f"{iname} öğretmenevi var mı?", f"Evet, {iname} içinde {cnt['ogretmenevi']} öğretmenevi listeleniyor. Öncelik öğretmenlerindir; boş oda varsa sivil misafir de kabul edilebilir."))
+    if cnt["kamp"]:
+        faq.append((f"{iname} kamp alanı var mı?", f"{iname} içinde {cnt['kamp']} kamp alanı ya da kamp noktası listeleniyor."))
+    ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": f"{BASE}/"},
+            {"@type": "ListItem", "position": 2, "name": city, "item": f"{BASE}/{key}/"},
+            {"@type": "ListItem", "position": 3, "name": iname, "item": f"{BASE}/{path}"}]},
+          {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
+          {"@context": "https://schema.org", "@type": "ItemList", "name": f"{iname} ucuz konaklama", "numberOfItems": n,
+           "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, city)} for i, p in enumerate(items[:200])]}]
+    body = f"""<nav class="crumbs" aria-label="Konum"><a href="../../">Yolhanı</a><span>›</span><a href="../">{e(city)}</a><span>›</span>{e(iname)}</nav>
+<section class="hero city">
+  <div class="hero-text">
+    <h1>{e(iname)} ucuz konaklama</h1>
+    <p class="lead">{e(intro)}</p>
+    <p class="updated">Son güncelleme {TODAY_TR}. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
+  </div>
+</section>
+<div class="layout" data-city="{key}" data-cityname="{e(city)}">
+  <aside class="side">
+    <nav class="toc" aria-label="Bölümler"><h2>Bu sayfada</h2>{"".join(toc)}</nav>
+    <div class="near"><h2>{e(city)} içinde diğer ilçeler</h2><p class="ilist">{ilce_links(key, c, "../../", skip=ilce)}</p>
+    <p><a href="../">{e(city)} için tüm yerler →</a></p></div>
+  </aside>
+  <div class="content">
+    {"".join(secs)}
+    <section class="faq"><h2>Sık sorulan sorular</h2>
+    {"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
+    </section>
+    {callout(feedback("yorum", city=city, ilce=ilce, page=f"{BASE}/{path}"), feedback("ekle", city=city, ilce=ilce, page=f"{BASE}/{path}"))}
+  </div>
+</div>
+"""
+    return head(title, desc, path, ld, og=key) + body + foot("../../")
+
+
 def place_page(key, c, p):
     name, city = p["name"], c["name"]
     g = GROUP_OF.get(p["tk"], GROUPS[4])
     label, ex, ti = label_of(p), extras(p), tinfo(p)
     path = PAGE[p["id"]]
-    where = f"{p['ilce']}, {city}" if p["ilce"] and p["ilce"] not in (city, "Merkez") else city
+    where = f"{p['ilce']}, {city}" if p["ilce"] and p["ilce"] != "Merkez" else f"{city} Merkez" if p["ilce"] else city
     avg = KM_TYPES.get(p["tk"], {}).get("sivil")
     m = re.search(r"~([\d.]+) TL", p["note"])
     note = "" if m else p["note"]
@@ -757,7 +912,9 @@ def place_page(key, c, p):
     if ex.get("web"):
         ld_place["sameAs"] = ex["web"]
     crumbs = [("Yolhanı", f"{BASE}/"), (city, f"{BASE}/{key}/")]
-    if (key, g[0]) in GPAGE:
+    if (key, p["ilce"]) in IPAGE:
+        crumbs.append((ilce_name(c, p["ilce"]), f"{BASE}/{IPAGE[(key, p['ilce'])]}"))
+    elif (key, g[0]) in GPAGE:
         crumbs.append((g[1], f"{BASE}/{GPAGE[(key, g[0])]}"))
     crumbs.append((name, f"{BASE}/{path}"))
     ld = [ld_place,
@@ -850,7 +1007,7 @@ def group_page(key, c, gk):
   </aside>
   <div class="content">
     <section class="group" id="{gk}"><h2>{e(label)} <small>{n}</small></h2>{pnote}
-    <ul class="places">{"".join(place_card(p, name, "../../") for p in items)}</ul></section>
+    {cards_by_ilce(items, key, c, "../../")}</section>
   </div>
 </div>
 """
@@ -895,6 +1052,10 @@ def main():
     for key, c in CITIES.items():
         write(f"{key}/index.html", city_page(key, c))
         urls.append((f"{key}/", "0.8"))
+        for (k2, ilce), u in IPAGE.items():
+            if k2 == key:
+                write(f"{u}index.html", ilce_page(key, c, ilce))
+                urls.append((u, "0.7"))
         for gk in GSLUG:
             if (key, gk) in GPAGE:
                 write(f"{GPAGE[(key, gk)]}index.html", group_page(key, c, gk))
