@@ -161,3 +161,45 @@ const openTarget = () => {
   if (sec && el.classList.contains("extra")) { sec.classList.remove("collapsed"); sec.querySelector(".showall")?.remove(); el.scrollIntoView(); }
 };
 openTarget(); addEventListener("hashchange", openTarget);
+
+// Harita düğmesi (il, ilçe ve tür sayfaları): ilk tıklamada Leaflet yüklenir; görünen ve konumu bilinen yerler işaretlenir
+(() => {
+  const btn = document.getElementById("f-map"), box = document.getElementById("harita");
+  if (!btn || !box) return;
+  const items = [...document.querySelectorAll(".place")], note = document.getElementById("harita-not");
+  let map, layer;
+  const draw = () => {
+    layer.clearLayers();
+    const pts = items.filter(li => !li.hidden && li.dataset.lat);
+    for (const li of pts) {
+      const approx = li.dataset.approx;
+      const m = L.circleMarker([+li.dataset.lat, +li.dataset.lon], { radius: 7, weight: 2, color: "#fff", fillColor: approx ? "#a88a6c" : "#6b4426", fillOpacity: .95 });
+      const link = li.querySelector("h3 a");
+      const a = document.createElement("a"); a.href = link ? link.href : "#" + li.id; a.textContent = li.dataset.name;
+      const d = document.createElement("div"); d.append(a, document.createElement("br"), li.dataset.label + (approx ? " · yaklaşık konum" : ""));
+      m.bindPopup(d).addTo(layer);
+    }
+    const noGeo = items.filter(li => !li.hidden && !li.dataset.lat).length;
+    note.textContent = pts.length + " yer haritada" + (noGeo ? "; " + noGeo + " yerin konumu bilinmiyor, kartındaki Yol tarifi ile bulabilirsin." : ".")
+      + (pts.some(li => li.dataset.approx) ? " Açık renkli noktaların konumu adresten bulundu, yaklaşıktır." : "");
+    if (pts.length) map.fitBounds(L.latLngBounds(pts.map(li => [+li.dataset.lat, +li.dataset.lon])).pad(.1), { maxZoom: 14 });
+  };
+  const load = () => new Promise((ok, no) => {
+    const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.append(c);
+    const j = document.createElement("script"); j.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"; j.onload = ok; j.onerror = no; document.head.append(j);
+  });
+  btn.addEventListener("click", async () => {
+    const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", open);
+    btn.lastChild.textContent = open ? "Haritayı gizle" : "Haritada göster";
+    if (!open) return;
+    if (!map) {
+      try { await load(); } catch { note.textContent = "Harita yüklenemedi."; return; }
+      map = L.map("harita-in", { scrollWheelZoom: false });
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+      layer = L.layerGroup().addTo(map);
+      window.yolhaniMap = () => { if (!box.hidden) draw(); };
+    }
+    map.invalidateSize(); draw();
+  });
+})();

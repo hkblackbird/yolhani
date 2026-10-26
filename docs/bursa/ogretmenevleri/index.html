@@ -24,7 +24,7 @@
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="preload" href="../../assets/fonts/worksans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../../assets/fonts/zillaslab-700-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../assets/site.css?v=1f2dc636">
+<link rel="stylesheet" href="../../assets/site.css?v=72d001dd">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": "https://hkblackbird.github.io/yolhani/"}, {"@type": "ListItem", "position": 2, "name": "Bursa", "item": "https://hkblackbird.github.io/yolhani/bursa/"}, {"@type": "ListItem", "position": 3, "name": "Öğretmenevleri", "item": "https://hkblackbird.github.io/yolhani/bursa/ogretmenevleri/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "Bursa öğretmenevleri", "numberOfItems": 12, "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://hkblackbird.github.io/yolhani/bursa/gemlik-ogretmenevi/", "name": "Gemlik Öğretmenevi"}, {"@type": "ListItem", "position": 2, "url": "https://hkblackbird.github.io/yolhani/bursa/harmancik-ogretmenevi/", "name": "Harmancık Öğretmenevi"}, {"@type": "ListItem", "position": 3, "url": "https://hkblackbird.github.io/yolhani/bursa/inegol-ogretmenevi-ve-aksam-sanat-okulu/", "name": "İnegöl Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 4, "url": "https://hkblackbird.github.io/yolhani/bursa/iznik-ogretmenevi-ve-aksam-sanat-okulu/", "name": "İznik Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 5, "url": "https://hkblackbird.github.io/yolhani/bursa/karacabey-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Karacabey Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 6, "url": "https://hkblackbird.github.io/yolhani/bursa/keles-ogretmenevi/", "name": "Keles Öğretmenevi"}, {"@type": "ListItem", "position": 7, "url": "https://hkblackbird.github.io/yolhani/bursa/kestel-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Kestel Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 8, "url": "https://hkblackbird.github.io/yolhani/bursa/mudanya-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Mudanya Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 9, "url": "https://hkblackbird.github.io/yolhani/bursa/mustafakemalpasa-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Mustafakemalpaşa Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 10, "url": "https://hkblackbird.github.io/yolhani/bursa/orhaneli-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Orhaneli Öğretmenevi ve Akşam Sanat Okulu"}, {"@type": "ListItem", "position": 11, "url": "https://hkblackbird.github.io/yolhani/bursa/orhangazi-ogretmenevi/", "name": "Orhangazi Öğretmenevi"}, {"@type": "ListItem", "position": 12, "url": "https://hkblackbird.github.io/yolhani/bursa/bursa-ogretmenevi-ve-aksam-sanat-okulu/", "name": "Bursa Öğretmenevi ve Akşam Sanat Okulu"}]}</script>
 </head>
 <body>
@@ -57,6 +57,8 @@
     <div class="near"><h2>Bursa içinde diğer türler</h2><div class="otypes"><a href="../../bursa/kamp-alanlari/">Kamp alanları ve tabiat parkları</a><a href="../../bursa/pansiyon-hostel/">Pansiyon ve hosteller</a><a href="../../bursa/kamu-misafirhaneleri/">Kamu misafirhaneleri</a><a href="../../bursa/polisevi-orduevi/">Polisevi, orduevi ve adliye tesisleri</a><a href="../">Tüm yerler</a></div></div>
   </aside>
   <div class="content">
+    <div class="maptools"><button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg><span>Haritada göster</span></button></div>
+    <div id="harita" class="citymap" hidden><div id="harita-in"></div><p id="harita-not" class="count"></p></div>
     <section class="group" id="ogretmenevi"><h2>Öğretmenevleri <small>12</small></h2><p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: Öğretmenevi ~900 TL'den başlıyor. Tesise göre değişir; kesin fiyatı telefonla sor. <a href="../../fiyatlar/">Kamu personeli ve sivil fiyat tablosu</a>.</p>
     <ul class="places"><li class="place" id="p-m-bursa-gemlik-ogretmenevi" data-ilce="Gemlik" data-who="prio"
   data-name="Gemlik Öğretmenevi" data-label="Öğretmenevi" data-tel="0224 514 24 11">
@@ -78,7 +80,7 @@
   <p class="addr"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Keles Caddesi No: 7, Harmancık</p>
   <div class="acts"><a class="act" href="tel:+902248812676"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0224 881 26 76</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=Harmanc%C4%B1k%20%C3%96%C4%9Fretmenevi%20Keles%20Caddesi%20No%3A%207%2C%20Harmanc%C4%B1k%20Bursa" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
   <a class="fix" href="../../bursa/harmancik-ogretmenevi/">Ayrıntılar</a></div>
-</li><li class="place" id="p-m-bursa-inegol-ogretmenevi-ve-aksam-sanat-okulu" data-ilce="İnegöl" data-who="prio"
+</li><li class="place" id="p-m-bursa-inegol-ogretmenevi-ve-aksam-sanat-okulu" data-ilce="İnegöl" data-who="prio" data-lat="40.07374" data-lon="29.50486"
   data-name="İnegöl Öğretmenevi ve Akşam Sanat Okulu" data-label="Öğretmenevi" data-tel="0224 711 28 00">
   <div class="ph"><span class="ticon t-ogr"><svg class="ic" aria-hidden="true"><use href="#i-ogr"/></svg></span><div><h3><a href="../../bursa/inegol-ogretmenevi-ve-aksam-sanat-okulu/">İnegöl Öğretmenevi ve Akşam Sanat Okulu</a></h3>
   <p class="meta">Öğretmenevi · İnegöl</p></div>
@@ -86,7 +88,7 @@
   <span class="who prio">Öğretmenlere öncelik, boşsa sivil</span>
   
   <p class="addr"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Kemalpaşa Mahallesi, Osman Balcı Sokak No: 3, İnegöl</p>
-  <div class="acts"><a class="act" href="tel:+902247112800"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0224 711 28 00</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=%C4%B0neg%C3%B6l%20%C3%96%C4%9Fretmenevi%20ve%20Ak%C5%9Fam%20Sanat%20Okulu%20Kemalpa%C5%9Fa%20Mahallesi%2C%20Osman%20Balc%C4%B1%20Sokak%20No%3A%203%2C%20%C4%B0neg%C3%B6l%20Bursa" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
+  <div class="acts"><a class="act" href="tel:+902247112800"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0224 711 28 00</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=40.07374%2C29.50486" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
   <a class="fix" href="../../bursa/inegol-ogretmenevi-ve-aksam-sanat-okulu/">Ayrıntılar</a></div>
 </li><li class="place" id="p-m-bursa-iznik-ogretmenevi-ve-aksam-sanat-okulu" data-ilce="İznik" data-who="prio"
   data-name="İznik Öğretmenevi ve Akşam Sanat Okulu" data-label="Öğretmenevi" data-tel="0224 757 10 80">
@@ -191,7 +193,7 @@
       <li><a href="../../kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="../../pansiyon-hostel/">Pansiyon ve hosteller</a></li>
       <li><a href="../../ucretsiz-kamp/">Ücretsiz kamp</a></li><li><a href="../../fiyatlar/">Fiyatlar 2026</a></li>
       <li><a href="../../yakinimda/">Yakınımdakiler</a></li></ul></div>
-    <div><h2>Popüler iller</h2><ul><li><a href="../../antalya/">Antalya</a></li><li><a href="../../mugla/">Muğla</a></li><li><a href="../../istanbul/">İstanbul</a></li><li><a href="../../izmir/">İzmir</a></li><li><a href="../../canakkale/">Çanakkale</a></li><li><a href="../../nevsehir/">Nevşehir</a></li><li><a href="../../balikesir/">Balıkesir</a></li><li><a href="../../konya/">Konya</a></li></ul></div>
+    <div><h2>Popüler iller</h2><ul><li><a href="../../antalya/">Antalya</a></li><li><a href="../../mugla/">Muğla</a></li><li><a href="../../istanbul/">İstanbul</a></li><li><a href="../../izmir/">İzmir</a></li><li><a href="../../nevsehir/">Nevşehir</a></li><li><a href="../../canakkale/">Çanakkale</a></li><li><a href="../../balikesir/">Balıkesir</a></li><li><a href="../../mersin/">Mersin</a></li></ul></div>
     <div><h2>Yolhanı</h2><ul>
       <li><a href="../../hakkinda/">Hakkında</a></li>
       
@@ -202,6 +204,6 @@
   <div class="in legal"><p>Veri: kamumisafirhaneleri.com.tr il listeleri · <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap katkıcıları</a> (ODbL) · gezgin yorumları.
   Bilgiler değişebilir; gitmeden önce tesisi arayıp sivil kabul ve fiyatı sor. Son güncelleme: 27 Ekim 2026.</p></div>
 </footer>
-<script src="../../assets/ara.js?v=1f2dc636" data-root="../../" defer></script>
+<script src="../../assets/ara.js?v=72d001dd" data-root="../../" defer></script>
 </body>
 </html>

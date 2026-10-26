@@ -24,7 +24,7 @@
 <link rel="manifest" href="../../manifest.webmanifest">
 <link rel="preload" href="../../assets/fonts/worksans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../../assets/fonts/zillaslab-700-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="../../assets/site.css?v=1f2dc636">
+<link rel="stylesheet" href="../../assets/site.css?v=72d001dd">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": "https://hkblackbird.github.io/yolhani/"}, {"@type": "ListItem", "position": 2, "name": "Antalya", "item": "https://hkblackbird.github.io/yolhani/antalya/"}, {"@type": "ListItem", "position": 3, "name": "Polisevi, orduevi ve adliye tesisleri", "item": "https://hkblackbird.github.io/yolhani/antalya/polisevi-orduevi/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "Antalya polisevi, orduevi ve adliye tesisleri", "numberOfItems": 4, "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://hkblackbird.github.io/yolhani/antalya/atgv-antalya-egitim-ve-sosyal-tesisleri-hakimevi/", "name": "ATGV Antalya Eğitim ve Sosyal Tesisleri (Hakimevi)"}, {"@type": "ListItem", "position": 2, "url": "https://hkblackbird.github.io/yolhani/antalya/antalya-lara-polisevi/", "name": "Antalya Lara Polisevi"}, {"@type": "ListItem", "position": 3, "url": "https://hkblackbird.github.io/yolhani/antalya/antalya-orduevi/", "name": "Antalya Orduevi"}, {"@type": "ListItem", "position": 4, "url": "https://hkblackbird.github.io/yolhani/antalya/antalya-polis-moral-egitim-merkezi-polisevi/", "name": "Antalya Polis Moral Eğitim Merkezi Polisevi"}]}</script>
 </head>
 <body>
@@ -57,6 +57,8 @@
     <div class="near"><h2>Antalya içinde diğer türler</h2><div class="otypes"><a href="../../antalya/ogretmenevleri/">Öğretmenevleri</a><a href="../../antalya/kamp-alanlari/">Kamp alanları ve tabiat parkları</a><a href="../../antalya/pansiyon-hostel/">Pansiyon ve hosteller</a><a href="../../antalya/belediye-tesisleri/">Belediye tesisleri ve uygulama otelleri</a><a href="../../antalya/kamu-misafirhaneleri/">Kamu misafirhaneleri</a><a href="../">Tüm yerler</a></div></div>
   </aside>
   <div class="content">
+    <div class="maptools"><button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita"><svg class="ic" aria-hidden="true"><use href="#i-map"/></svg><span>Haritada göster</span></button></div>
+    <div id="harita" class="citymap" hidden><div id="harita-in"></div><p id="harita-not" class="count"></p></div>
     <section class="group" id="mensup"><h2>Polisevi, orduevi ve adliye tesisleri <small>4</small></h2><p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: Polisevi ~1.000 TL, Adliye ~1.050 TL, Orduevi / askeri tesis ~800 TL'den başlıyor. Tesise göre değişir; kesin fiyatı telefonla sor. <a href="../../fiyatlar/">Kamu personeli ve sivil fiyat tablosu</a>.</p>
     <ul class="places"><li class="place" id="p-m-antalya-atgv-antalya-egitim-ve-sosyal-tesisleri-hakimevi" data-ilce="Aksu" data-who="closed"
   data-name="ATGV Antalya Eğitim ve Sosyal Tesisleri (Hakimevi)" data-label="Adliye misafirhanesi" data-tel="0242 431 22 40">
@@ -78,7 +80,7 @@
   <p class="addr"><svg class="ic" aria-hidden="true"><use href="#i-pin"/></svg>Güzeloba Mah. Lara Cad. No:218 Muratpaşa</p>
   <div class="acts"><a class="act" href="tel:+902422026775"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0242 202 67 75</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=Antalya%20Lara%20Polisevi%20G%C3%BCzeloba%20Mah.%20Lara%20Cad.%20No%3A218%20Muratpa%C5%9Fa%20Antalya" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
   <a class="fix" href="../../antalya/antalya-lara-polisevi/">Ayrıntılar</a></div>
-</li><li class="place" id="p-m-antalya-antalya-orduevi" data-ilce="Muratpaşa" data-who="closed"
+</li><li class="place" id="p-m-antalya-antalya-orduevi" data-ilce="Muratpaşa" data-who="closed" data-lat="36.87651" data-lon="30.70715" data-approx="1"
   data-name="Antalya Orduevi" data-label="Orduevi / askeri tesis" data-tel="0242 241 10 21">
   <div class="ph"><span class="ticon t-mensup"><svg class="ic" aria-hidden="true"><use href="#i-mensup"/></svg></span><div><h3><a href="../../antalya/antalya-orduevi/">Antalya Orduevi</a></h3>
   <p class="meta">Orduevi / askeri tesis · Muratpaşa</p></div>
@@ -111,7 +113,7 @@
       <li><a href="../../kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="../../pansiyon-hostel/">Pansiyon ve hosteller</a></li>
       <li><a href="../../ucretsiz-kamp/">Ücretsiz kamp</a></li><li><a href="../../fiyatlar/">Fiyatlar 2026</a></li>
       <li><a href="../../yakinimda/">Yakınımdakiler</a></li></ul></div>
-    <div><h2>Popüler iller</h2><ul><li><a href="../../antalya/">Antalya</a></li><li><a href="../../mugla/">Muğla</a></li><li><a href="../../istanbul/">İstanbul</a></li><li><a href="../../izmir/">İzmir</a></li><li><a href="../../canakkale/">Çanakkale</a></li><li><a href="../../nevsehir/">Nevşehir</a></li><li><a href="../../balikesir/">Balıkesir</a></li><li><a href="../../konya/">Konya</a></li></ul></div>
+    <div><h2>Popüler iller</h2><ul><li><a href="../../antalya/">Antalya</a></li><li><a href="../../mugla/">Muğla</a></li><li><a href="../../istanbul/">İstanbul</a></li><li><a href="../../izmir/">İzmir</a></li><li><a href="../../nevsehir/">Nevşehir</a></li><li><a href="../../canakkale/">Çanakkale</a></li><li><a href="../../balikesir/">Balıkesir</a></li><li><a href="../../mersin/">Mersin</a></li></ul></div>
     <div><h2>Yolhanı</h2><ul>
       <li><a href="../../hakkinda/">Hakkında</a></li>
       
@@ -122,6 +124,6 @@
   <div class="in legal"><p>Veri: kamumisafirhaneleri.com.tr il listeleri · <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap katkıcıları</a> (ODbL) · gezgin yorumları.
   Bilgiler değişebilir; gitmeden önce tesisi arayıp sivil kabul ve fiyatı sor. Son güncelleme: 27 Ekim 2026.</p></div>
 </footer>
-<script src="../../assets/ara.js?v=1f2dc636" data-root="../../" defer></script>
+<script src="../../assets/ara.js?v=72d001dd" data-root="../../" defer></script>
 </body>
 </html>

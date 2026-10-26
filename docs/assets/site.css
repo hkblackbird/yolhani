@@ -468,3 +468,4 @@ table.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 .near-list .acts { border: 0; padding: 0; gap: 14px; font-weight: 600; }
 @media (max-width: 600px) { .near-list li { grid-template-columns: 60px minmax(0, 1fr); } .near-list .acts { grid-column: 2; } }
 .geonote { font-size: .84rem; color: var(--muted); margin-top: -8px; }
+.maptools { display: flex; justify-content: flex-end; margin-bottom: -18px; }

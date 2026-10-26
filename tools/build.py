@@ -52,7 +52,9 @@ def tel_fmt(t):
     d = re.sub(r"\D", "", t or "")
     d = d[2:] if d.startswith("90") and len(d) == 12 else d
     d = "0" + d if len(d) == 10 else d
-    return f"{d[:4]} {d[4:7]} {d[7:9]} {d[9:]}" if len(d) == 11 and d.startswith("0") else (t or "")
+    if len(d) == 11 and d.startswith("0") and d[1] in "2345789":
+        return f"{d[:4]} {d[4:7]} {d[7:9]} {d[9:]}"
+    return ""   # eksik ya da hatalı numara gösterilmez
 
 
 for _c in CITIES.values():
@@ -160,6 +162,92 @@ def tr_key(s):
     s = (s or "").replace("İ", "i").replace("I", "ı").lower()
     return [TR_ORDER.index(ch) if ch in TR_ORDER else 100 + ord(ch) for ch in s]
 
+
+# ---------- Tekrar eden kayıtlar ----------
+# Öğretmenevleri ve bazı misafirhaneler hem kamu listesinde hem OSM'de (çoğu zaman "pansiyon" diye) var. Aynı ilçede adı aynı
+# olan kayıtlar birleştirilir: tür ve telefon kamu listesinden, kesin konum OSM'den gelir. Adı "… kamp noktası" olanlar
+# ayrı yerlerdir, birleştirilmez.
+def name_key(city, name):
+    s = name.replace("İ", "i").replace("I", "ı").lower()
+    for a, b in zip("çğıöşüâ", "cgiosua"):
+        s = s.replace(a, b)
+    s = re.sub(r"ogretmen ?evi", "ogretmenevi", s)
+    s = re.sub(r"\b(ve )?(aksam sanat okulu|aso)( mudurlugu)?\b|\bmudurlugu\b|\bsube\b", "", s)
+    cn = city.replace("İ", "i").lower()
+    for a, b in zip("çğıöşü", "cgiosu"):
+        cn = cn.replace(a, b)
+    return re.sub(r"[^a-z0-9]+", "", re.sub(rf"\b{cn}\b", "", s))
+
+
+is_osm = lambda p: "openstreetmap.org" in (p["src"] or "")
+MERGED = 0
+for _c in CITIES.values():
+    by = {}
+    for _p in _c["places"]:
+        if _p["name"].endswith("kamp noktası"):
+            continue
+        by.setdefault((_p["ilce"], name_key(_c["name"], _p["name"])), []).append(_p)
+    drop = set()
+    for grp in by.values():
+        if len(grp) < 2:
+            continue
+        km_ = [q for q in grp if not is_osm(q)]
+        osm_ = [q for q in grp if is_osm(q)]
+        keep = max(km_ or osm_, key=lambda q: (bool(q["tel"]), len(q["addr"] or "")))
+        for q in grp:
+            if q is keep:
+                continue
+            # İki OSM kaydı ancak birbirine yakınsa (500 m) aynı yerdir
+            if is_osm(q) and is_osm(keep) and q["lat"] and keep["lat"] and km(q, keep) > .5:
+                continue
+            if is_osm(q):
+                if q["lat"] and keep.get("geo") != "osm":
+                    keep["lat"], keep["lon"], keep["geo"] = q["lat"], q["lon"], "osm"
+                    keep["map"] = q["map"]
+                keep.setdefault("osm", q["src"])
+            keep["tel"] = keep["tel"] or q["tel"]
+            keep["addr"] = keep["addr"] or q["addr"]
+            drop.add(q["id"])
+    MERGED += len(drop)
+    _c["places"] = [q for q in _c["places"] if q["id"] not in drop]
+
+# OSM'de "pansiyon" diye işaretlenmiş kamu tesisleri doğru türe alınır. Adında kurum geçmeyen "Konukevi"ler özel
+# pansiyon olabilir, dokunulmaz. Öğrenci yurdu ve hasta yakını konukevleri gezgine açık olmadığı için listeden çıkar.
+KURUM = re.compile(r"Belediye|Üniversite|Üniv\.|DSİ|Dsi|PTT|Karayolları|Orman|OGM|Maliye|DHMİ|TEDAŞ|TEİAŞ|İLBANK|İlbank|TPAO|Valilik|"
+                   r"Kaymakamlı|Bakanlı|Müdürlüğü|Ceza İnfaz|Kavakçılık|İsdemir|KÜMAŞ|Demiryol|Maden|\b(AÇÜ|AGÜ|PAÜ|İZÜ)\b")
+NOT_LODGING = re.compile(r"\b(Erkek|Bayan|Kız)\b.*(Konuk|Yurd|Yurt)|Hasta|Palyatif|Hastane", re.I)
+for _c in CITIES.values():
+    _c["places"] = [q for q in _c["places"] if not (is_osm(q) and NOT_LODGING.search(q["name"]))]
+for _c in CITIES.values():
+    for _p in _c["places"]:
+        if is_osm(_p) and _p["tk"] == "pans":
+            n = _p["name"]
+            if re.search(r"Öğretmen ?[Ee]vi", n, re.I):
+                _p.update(tk="ogr", badge="Öğretmenevi", who="prio", whoText="Öğretmenlere öncelik, boşsa sivil", note="")
+            elif re.search(r"Polis ?evi|Orduevi|Askeri|Askerî|Jandarma", n, re.I):
+                _p.update(tk="pol" if re.search("Polis", n, re.I) else "ord", badge="Polisevi" if re.search("Polis", n, re.I) else "Orduevi / askeri tesis",
+                          who="closed", whoText="Çoğunlukla sadece mensupları ve yakınları", note="")
+            elif re.search(r"Misafirhane|Konuk ?[Ee]vi|Sosyal Tesis", n, re.I) and re.search(KURUM, n):
+                _p.update(tk="kamu", badge="Kamu misafirhanesi", who="prio",
+                          whoText="Kamu personeline öncelik; sivil kabulü kuruma göre değişir", note="")
+
+# Adresten bulunan konumların denetimi: ilçedeki OSM kayıtlarının ortasına 25 km'den uzaksa yanlış eşleşme sayılır
+_cent = {}
+for _c in CITIES.values():
+    for _p in _c["places"]:
+        if _p.get("geo") == "osm" and _p["ilce"]:
+            _cent.setdefault((_c["name"], _p["ilce"]), []).append((_p["lat"], _p["lon"]))
+GEO_DROPPED = 0
+for _c in CITIES.values():
+    for _p in _c["places"]:
+        pts = _cent.get((_c["name"], _p["ilce"]))
+        if _p.get("geo") in ("adres", "yer") and pts and len(pts) >= 2:
+            mid = {"lat": sorted(x[0] for x in pts)[len(pts) // 2], "lon": sorted(x[1] for x in pts)[len(pts) // 2]}
+            if km(_p, mid) > 25:
+                _p["alat"], _p["alon"] = _p["lat"], _p["lon"]
+                _p["lat"] = _p["lon"] = None
+                _p["geo"] = ""
+                GEO_DROPPED += 1
 
 # ---------- Türler ----------
 # Her yer bir gruba girer; il sayfasındaki bölümler ve rehber sayfaları bu gruplardan oluşur.
@@ -346,7 +434,7 @@ def place_card(p, city, rel="../"):
         tel = f'<a class="act" href="tel:+90{digits}">{icon("phone")}{e(p["tel"])}</a>'
     m = re.search(r"~([\d.]+) TL", p["note"])
     note = "" if m else p["note"]
-    geo = f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' if p["lat"] else ""
+    geo = (f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' + (' data-approx="1"' if p.get("geo") == "adres" else "")) if p["lat"] else ""
     return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}"{geo}
   data-name="{e(p["name"])}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
   <div class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h3>{f'<a href="{rel}{PAGE[p["id"]]}">{e(p["name"])}</a>' if p["id"] in PAGE else e(p["name"])}</h3>
@@ -410,42 +498,6 @@ FILTER_JS = """<script>
   if (il && [...sel.options].some(o => o.value === il)) sel.value = il; else if (il) q.value = il;
   if (ps.get("q")) q.value = ps.get("q");
   if (il || ps.get("q")) run();
-
-  // Harita: ilk tıklamada Leaflet yüklenir; görünen ve konumu bilinen yerler işaretlenir
-  const btn = document.getElementById("f-map"), box = document.getElementById("harita");
-  let map, layer;
-  const draw = () => {
-    layer.clearLayers();
-    const pts = items.filter(li => !li.hidden && li.dataset.lat);
-    for (const li of pts) {
-      const m = L.circleMarker([+li.dataset.lat, +li.dataset.lon], { radius: 7, weight: 2, color: "#fff", fillColor: "#6b4426", fillOpacity: .9 });
-      const a = document.createElement("a"); a.href = "#" + li.id; a.textContent = li.dataset.name;
-      const d = document.createElement("div"); d.append(a, document.createElement("br"), li.dataset.label);
-      m.bindPopup(d).addTo(layer);
-    }
-    const noGeo = items.filter(li => !li.hidden && !li.dataset.lat).length;
-    document.getElementById("harita-not").textContent = pts.length + " yer haritada" +
-      (noGeo ? "; " + noGeo + " yerin (çoğu kamu tesisi) konumu henüz yok, kartındaki Yol tarifi ile bulabilirsin." : ".");
-    if (pts.length) map.fitBounds(L.latLngBounds(pts.map(li => [+li.dataset.lat, +li.dataset.lon])).pad(.1), { maxZoom: 13 });
-  };
-  const load = () => new Promise((ok, no) => {
-    const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.append(c);
-    const j = document.createElement("script"); j.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"; j.onload = ok; j.onerror = no; document.head.append(j);
-  });
-  btn.addEventListener("click", async () => {
-    const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", open);
-    btn.lastChild.textContent = open ? "Haritayı gizle" : "Haritada göster";
-    if (!open) return;
-    if (!map) {
-      try { await load(); } catch { document.getElementById("harita-not").textContent = "Harita yüklenemedi."; return; }
-      map = L.map("harita-in", { scrollWheelZoom: false });
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
-      layer = L.layerGroup().addTo(map);
-      window.yolhaniMap = () => { if (!box.hidden) draw(); };
-    }
-    map.invalidateSize(); draw();
-  });
 })();
 </script>"""
 
@@ -710,7 +762,7 @@ def slugify(s):
 
 
 def extras(p):
-    t = OSM.get(p["src"] or "", {})
+    t = OSM.get(p.get("osm") or p["src"] or "", {})
     out = {}
     w = t.get("website") or t.get("contact:website")
     if w and w.startswith("http"):
@@ -840,17 +892,10 @@ def ilce_page(key, c, ilce):
     if ilce != "Merkez":
         title = f"{iname} Ucuz Konaklama, {city}: {n} Yer | Pansiyon, Kamp, Misafirhane | Yolhanı"
     desc = f"{iname}, {city}: {n} ucuz konaklama yeri ({', '.join(parts)}). Adres, telefon, kimlerin kalabildiği ve yol tarifi."
-    faq = [(f"{iname} içinde ucuz nerede kalınır?", intro + " Gitmeden önce telefonla arayıp boş yer ve fiyatı sor.")]
-    if cnt["ogretmenevi"]:
-        faq.append((f"{iname} öğretmenevi var mı?", f"Evet, {iname} içinde {cnt['ogretmenevi']} öğretmenevi listeleniyor. Öncelik öğretmenlerindir; boş oda varsa sivil misafir de kabul edilebilir."))
-    if cnt["kamp"]:
-        faq.append((f"{iname} kamp alanı var mı?", f"{iname} içinde {cnt['kamp']} kamp alanı ya da kamp noktası listeleniyor."))
     ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": f"{BASE}/"},
             {"@type": "ListItem", "position": 2, "name": city, "item": f"{BASE}/{key}/"},
             {"@type": "ListItem", "position": 3, "name": iname, "item": f"{BASE}/{path}"}]},
-          {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]},
           {"@context": "https://schema.org", "@type": "ItemList", "name": f"{iname} ucuz konaklama", "numberOfItems": n,
            "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, city)} for i, p in enumerate(items[:60])]}]
     body = f"""<nav class="crumbs" aria-label="Konum"><a href="../../">Yolhanı</a><span>›</span><a href="../">{e(city)}</a><span>›</span>{e(iname)}</nav>
@@ -868,10 +913,9 @@ def ilce_page(key, c, ilce):
     <p><a href="../">{e(city)} için tüm yerler →</a></p></div>
   </aside>
   <div class="content">
+    <div class="maptools"><button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita">{icon("map")}<span>Haritada göster</span></button></div>
+    <div id="harita" class="citymap" hidden><div id="harita-in"></div><p id="harita-not" class="count"></p></div>
     {"".join(secs)}
-    <section class="faq"><h2>Sık sorulan sorular</h2>
-    {"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
-    </section>
     {callout(feedback("yorum", city=city, ilce=ilce, page=f"{BASE}/{path}"), feedback("ekle", city=city, ilce=ilce, page=f"{BASE}/{path}"))}
   </div>
 </div>
@@ -906,8 +950,11 @@ def place_page(key, c, p):
     if ex.get("web"):
         host = re.sub(r"^https?://(www\.)?", "", ex["web"]).split("/")[0]
         rows.append(("Web sitesi", f'<a href="{e(ex["web"])}" rel="noopener nofollow">{e(host)}</a>'))
+    src_txt = ("kamumisafirhaneleri.com.tr il listesi" + (", konum OpenStreetMap" if p.get("geo") == "osm" else "")) if not is_osm(p) \
+        else "OpenStreetMap katkıcıları (ODbL)"
     if note and not (ex.get("fee") and note.strip(" .") == ex["fee"]):
         rows.append(("Not", e(note.replace(ex.get("fee", "") + ". ", "") if ex.get("fee") else note)))
+    rows.append(("Bilgi kaynağı", e(src_txt) + f" <small>· {TODAY_TR} itibarıyla</small>"))
     dl = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in rows if v)
 
     # Yakındaki yerler: önce aynı ilçe, sonra aynı türden il içindekiler
@@ -920,20 +967,6 @@ def place_page(key, c, p):
     href = lambda q: "../../" + (PAGE[q["id"]] if q["id"] in PAGE else f"{key}/#p-{q['id']}")
     near_html = "".join(f'<li><a href="{href(q)}">{e(q["name"])}</a><span>{e(label_of(q))}{" · " + e(q["ilce"]) if q["ilce"] else ""}</span></li>' for q in near)
 
-    who_ans = {
-        "open": f"Evet. {name} herkese açık bir {label.lower()}; sivil misafir kabul edilir.",
-        "prio": f"Öncelik {'öğretmenlerindir' if p['tk'] == 'ogr' else 'kurum ve kamu personelinindir'}; boş oda varsa sivil misafir de kabul edilebilir. "
-                f"Gitmeden önce {p['tel'] or 'tesisi'} {'numarasını arayıp' if p['tel'] else 'arayıp'} sivil kabul ve fiyatı sor.",
-        "closed": f"{name} çoğunlukla yalnızca mensuplarına ve yakınlarına açıktır. Mensup değilsen yakındaki öğretmenevi ve kamp alanlarına bak.",
-    }.get(p["who"], "")
-    faq = [(f"{name} sivil misafir kabul ediyor mu?", who_ans)]
-    if p["tel"]:
-        faq.append((f"{name} telefon numarası nedir?", f"{name} telefon numarası {p['tel']}. Rezervasyon ve boş oda için doğrudan bu numarayı arayabilirsin."))
-    faq.append((f"{name} nerede?", f"{name} {where} konumunda" + (f", adresi: {p['addr']}." if p["addr"] else ".")
-                + " Yol tarifi için sayfadaki Yol tarifi bağlantısını kullan."))
-    if avg:
-        faq.append((f"{name} gecelik fiyatı ne kadar?", f"Bu tesis için ayrı bir fiyat yayımlanmıyor. Kaynak sitenin 2026 Türkiye ortalamasına göre "
-                    f"{label.lower()} türünde sivil misafir için gecelik fiyat ~{num(avg)} TL'den başlıyor. Kesin fiyatı telefonla sor."))
 
     ld_place = place_ld(p, city)
     ld_place.update({"@context": "https://schema.org", "url": f"{BASE}/{path}"})
@@ -947,9 +980,7 @@ def place_page(key, c, p):
     crumbs.append((name, f"{BASE}/{path}"))
     ld = [ld_place,
           {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-              {"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(crumbs)]},
-          {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-              {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}]
+              {"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(crumbs)]}]
     crumb_html = '<span>›</span>'.join(f'<a href="{u.replace(BASE + "/", "../../") or "../../"}">{e(n)}</a>' for n, u in crumbs[:-1]) + f"<span>›</span>{e(name)}"
     fix = feedback("duzelt", name, city, p["ilce"], f"{BASE}/{path}")
     dup = sum(1 for q in c["places"] if q["name"] == name and q["ilce"] == p["ilce"] and q["id"] in PAGE) > 1
@@ -977,9 +1008,6 @@ def place_page(key, c, p):
   <p><a href="../">{e(city)} için tüm yerler →</a></p></section>
 </aside>
 </div>
-<section class="faq"><h2>Sık sorulan sorular</h2>
-{"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
-</section>
 {callout(feedback("yorum", name, city, p["ilce"], f"{BASE}/{path}"), feedback("ekle", city=city, page=f"{BASE}/{path}"))}
 {MAP_JS if p["lat"] else ""}
 """
@@ -1035,6 +1063,8 @@ def group_page(key, c, gk):
     <div class="near"><h2>{e(name)} içinde diğer türler</h2><div class="otypes">{others}<a href="../">Tüm yerler</a></div></div>
   </aside>
   <div class="content">
+    <div class="maptools"><button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita">{icon("map")}<span>Haritada göster</span></button></div>
+    <div id="harita" class="citymap" hidden><div id="harita-in"></div><p id="harita-not" class="count"></p></div>
     <section class="group" id="{gk}"><h2>{e(label)} <small>{n}</small></h2>{pnote}
     {cards_by_ilce(items, key, c, "../../")}</section>
   </div>
