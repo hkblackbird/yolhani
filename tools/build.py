@@ -22,6 +22,7 @@ OUT = ROOT / "docs"
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "https://KULLANICIADI.github.io/yolhani").rstrip("/")
 APP = "https://claude.ai/artifact/96B435W52N7zqGfSPT3tTZ"   # yorum ve puanların olduğu uygulama
 TODAY = date.today().isoformat()
+GSV = "nefGFNmlp75A9iaJx1VpqBjrkocaucwtCmEYyNWSkT4"   # Google Search Console doğrulama kodu (meta etiketindeki content değeri)
 
 data = json.loads((ROOT / "data" / "yolhani.json").read_text(encoding="utf-8"))
 CITIES = data["cities"]
@@ -84,6 +85,7 @@ def head(title, desc, path, extra_ld=()):
 <meta property="og:url" content="{e(url)}">
 <meta property="og:locale" content="tr_TR">
 <meta name="theme-color" content="#6b4426">
+{f'<meta name="google-site-verification" content="{e(GSV)}">' if GSV else ""}
 <link rel="icon" href="{rel}assets/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Work+Sans:wght@400;500;600&display=swap">
