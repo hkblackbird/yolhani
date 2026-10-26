@@ -71,6 +71,23 @@ for _c in CITIES.values():
         keep.append(_p)
     _c["places"] = keep
 
+# Kamu misafirhanelerinin konumu: tools/geocode.py (Nominatim) sonuçları. "yer" ve "adres" haritada gösterilir,
+# "ilce" yalnızca "yakınımdakiler" sıralamasında kullanılır.
+GEO = json.loads((ROOT / "data" / "geocode.json").read_text(encoding="utf-8")) if (ROOT / "data" / "geocode.json").exists() else {}
+for _c in CITIES.values():
+    for _p in _c["places"]:
+        _p["geo"] = "osm" if _p["lat"] else ""
+        g = GEO.get(_p["id"])
+        if g and not _p["lat"]:
+            if g["kind"] in ("yer", "adres"):
+                _p["lat"], _p["lon"], _p["geo"] = g["lat"], g["lon"], g["kind"]
+            else:
+                _p["alat"], _p["alon"] = g["lat"], g["lon"]
+
+# Kaynak sitenin 2026 tür ortalamaları: kamu personeli fiyatı (sivil fiyat KM_TYPES içinde)
+KAMU_FIYAT = {"pol": 785, "ogr": 600, "dsi": 700, "tcdd": 600, "kgm": 640, "mal": 600, "met": 750, "dhmi": 400, "ord": 350,
+              "oz": 400, "teias": 630, "ogm": 606, "ptt": 750, "adl": 850, "uni": 750}
+
 # İlçe düzeltmesi: büyükşehirlerde "Merkez" ilçe yoktur; diğer illerde merkez ilçe "Merkez", "Nevşehir Merkez" ya da
 # il adıyla yazılmış, tek ada indirilir. Boş ilçeler önce adresten, sonra en yakın kayıttan (10 km içinde) bulunur.
 BUYUKSEHIR = set("Adana Ankara Antalya Aydın Balıkesir Bursa Denizli Diyarbakır Erzurum Eskişehir Gaziantep Hatay İstanbul İzmir "
@@ -157,6 +174,7 @@ GROUPS = [
     ("mensup", "Polisevi, orduevi ve adliye tesisleri", "Mensup tesisi", "mensup", {"pol", "ord", "adl"}),
 ]
 GROUP_OF = {k: g for g in GROUPS for k in g[4]}
+GKEYS = [g[0] for g in GROUPS]
 
 ICONS = {
     "ogr": '<path d="M2 9.5 12 4.5l10 5-10 5z"/><path d="M6 11.5v5c3.5 2.2 8.5 2.2 12 0v-5"/>',
@@ -275,6 +293,7 @@ def head(title, desc, path, ld=(), og=None, search=True, index=True):
   <a class="brand" href="{rel or './'}"><span class="mark">{icon("arch")}</span>Yolhanı</a>
   {search_box(rel, "top-q") if search else ""}
   <nav aria-label="Ana menü">
+    <a href="{rel}yakinimda/">{icon("pin")}Yakınımda</a>
     <a href="{rel}ogretmenevleri/">Öğretmenevleri</a>
     <a href="{rel}kamu-misafirhaneleri/">Misafirhaneler</a>
     <a href="{rel}kamp-alanlari/">Kamp alanları</a>
@@ -296,7 +315,9 @@ def foot(rel):
       <p>Yol üstündeki ucuz konaklama. Öğretmenevi, kamu misafirhanesi, kamp alanı ve pansiyonlar tek haritada; fiyat, temizlik ve sivil kabul bilgisini gezginler yazıyor.</p></div>
     <div><h2>Rehberler</h2><ul>
       <li><a href="{rel}ogretmenevleri/">Öğretmenevleri</a></li><li><a href="{rel}kamp-alanlari/">Kamp alanları</a></li>
-      <li><a href="{rel}kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="{rel}pansiyon-hostel/">Pansiyon ve hosteller</a></li></ul></div>
+      <li><a href="{rel}kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="{rel}pansiyon-hostel/">Pansiyon ve hosteller</a></li>
+      <li><a href="{rel}ucretsiz-kamp/">Ücretsiz kamp</a></li><li><a href="{rel}fiyatlar/">Fiyatlar 2026</a></li>
+      <li><a href="{rel}yakinimda/">Yakınımdakiler</a></li></ul></div>
     <div><h2>Popüler iller</h2><ul>{pop}</ul></div>
     <div><h2>Yolhanı</h2><ul>
       <li><a href="{rel}hakkinda/">Hakkında</a></li>
@@ -483,7 +504,7 @@ def city_page(key, c):
         if avgs:
             parts = [f'{KM_TYPES[t]["label"].replace(" misafirhanesi", "")} ~{num(KM_TYPES[t]["sivil"])} TL' for t, _ in avgs.most_common(4)]
             pnote = (f'<p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: {e(", ".join(parts))}\'den başlıyor. '
-                     'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
+                     'Tesise göre değişir; kesin fiyatı telefonla sor. <a href="../fiyatlar/">Kamu personeli ve sivil fiyat tablosu</a>.</p>')
         more = f'<a class="more" href="{GSLUG[gk]}/">Ayrı sayfada aç →</a>' if (key, gk) in GPAGE else ""
         secs.append(f'<section class="group" id="{gk}"><div class="ghead"><h2>{e(h)} <small>{len(items)}</small></h2>{more}</div>{pnote}'
                     f'{cards_by_ilce(items, key, c, "../")}</section>')
@@ -568,13 +589,15 @@ def home_page():
     <h1>Türkiye'de otelden ucuza nerede kalınır?</h1>
     <p class="lead">Öğretmenevi, DSİ ve PTT misafirhanesi, kamp alanı, pansiyon: 81 ilde {num(total)} yer tek yerde. Fiyatı, temizliği ve sivil kabul edilip edilmediğini orada kalan gezginler yazıyor.</p>
     {search_box("", "hero-q", "İl, ilçe ya da yer adı yaz. Örn. Kaş, Sivas DSİ")}
+    <p class="hero-link"><a href="yakinimda/">{icon("pin")}ya da bulunduğun yere en yakın yerleri göster</a></p>
 
   </div>
 </section>
 <section class="map card-box"><div class="sec-head"><h2>Haritadan il seç</h2><p>Sayılar o ildeki yer sayısı</p></div>
 <div class="mapscroll"><svg viewBox="0 0 {MAP['w']} {MAP['h']}" role="img" aria-label="Türkiye il haritası">{paths}<g class="labels">{labels}</g></svg></div>
 </section>
-<section><div class="sec-head"><h2>Ne tür bir yer arıyorsun?</h2></div><div class="hubs">{hubs}</div></section>
+<section><div class="sec-head"><h2>Ne tür bir yer arıyorsun?</h2></div><div class="hubs">{hubs}</div>
+<p class="morelinks"><a href="yakinimda/">{icon("pin")}Yakınımdaki yerler</a><a href="ucretsiz-kamp/">Ücretsiz kamp alanları</a><a href="fiyatlar/">Öğretmenevi ve misafirhane fiyatları 2026</a></p></section>
 <section id="iller"><div class="sec-head"><h2>İllere göre ucuz konaklama</h2></div><ul class="cities">{lis}</ul></section>
 <section><div class="sec-head"><h2>En çok seçenek olan listeler</h2></div><ul class="cities">{top}</ul></section>
 """
@@ -658,7 +681,9 @@ def search_index():
     label = lambda p: p["badge"] or GROUP_OF.get(p["tk"], GROUPS[4])[2]
     types = sorted({label(p) for _, c in cities for p in c["places"]}, key=tr_key)
     ti = {t: i for i, t in enumerate(types)}
-    ps = [[p["name"], ci, p["ilce"], ti[label(p)], p["id"], PAGE.get(p["id"], "")]
+    ps = [[p["name"], ci, p["ilce"], ti[label(p)], p["id"], PAGE.get(p["id"], ""),
+           round(p["lat"] or p.get("alat") or 0, 4), round(p["lon"] or p.get("alon") or 0, 4), p["tel"], p["who"],
+           "i" if not p["lat"] and p.get("alat") else "", GKEYS.index(GROUP_OF.get(p["tk"], GROUPS[4])[0])]
           for ci, (_, c) in enumerate(cities) for p in sorted(c["places"], key=lambda p: (tr_key(p["ilce"]), tr_key(p["name"])))]
     ci = {k: i for i, (k, _) in enumerate(cities)}
     ilces = {f"{ci[k]}|{i}": u for (k, i), u in IPAGE.items()}
@@ -869,7 +894,9 @@ def place_page(key, c, p):
     if p["tel"]:
         rows.append(("Telefon", f'<a href="{tel_href(p["tel"])}">{e(p["tel"])}</a>'))
     if avg:
-        rows.append(("Gecelik fiyat", f"Sivil misafir için ~{num(avg)} TL'den <small>(Türkiye ortalaması, tesise göre değişir; kesin fiyatı telefonla sor)</small>"))
+        kamu = KAMU_FIYAT.get(p["tk"])
+        rows.append(("Gecelik fiyat", f"Sivil ~{num(avg)} TL'den" + (f", kamu personeli ~{num(kamu)} TL'den" if kamu else "")
+                     + ' <small>(Türkiye ortalaması, tesise göre değişir; kesin fiyatı telefonla sor. <a href="../../fiyatlar/">Tüm fiyatlar</a>)</small>'))
     elif ex.get("fee"):
         rows.append(("Ücret", e(ex["fee"])))
     if ex.get("internet"):
@@ -926,10 +953,11 @@ def place_page(key, c, p):
     crumb_html = '<span>›</span>'.join(f'<a href="{u.replace(BASE + "/", "../../") or "../../"}">{e(n)}</a>' for n, u in crumbs[:-1]) + f"<span>›</span>{e(name)}"
     fix = feedback("duzelt", name, city, p["ilce"], f"{BASE}/{path}")
     dup = sum(1 for q in c["places"] if q["name"] == name and q["ilce"] == p["ilce"] and q["id"] in PAGE) > 1
-    title = f"{name} ({where}{', ' + label if dup else ''}): Telefon, Adres, Sivil Kabul | Yolhanı"
+    title = f"{name} ({where}{', ' + label if dup else ''}): Adres, Telefon, Nasıl Gidilir | Yolhanı"
     desc = (f"{name}, {where}. {label}." + (f" Telefon: {p['tel']}." if p["tel"] else "") + (f" Adres: {p['addr']}." if p["addr"] else "")
             + " Kimler kalabilir, ortalama fiyat, yol tarifi ve yakındaki diğer ucuz konaklama yerleri.")
-    geo = f'<div id="yer-harita" class="yermap" data-lat="{p["lat"]}" data-lon="{p["lon"]}" role="img" aria-label="{e(name)} konumu"></div>' if p["lat"] else ""
+    geo = (f'<div id="yer-harita" class="yermap" data-lat="{p["lat"]}" data-lon="{p["lon"]}" role="img" aria-label="{e(name)} konumu"></div>'
+           + ('<p class="geonote">Konum adresten bulundu, yaklaşıktır. Gitmeden önce Yol tarifi ile kontrol et.</p>' if p["geo"] == "adres" else "")) if p["lat"] else ""
     body = f"""<nav class="crumbs" aria-label="Konum">{crumb_html}</nav>
 <div class="layout yer" data-city="{key}" data-cityname="{e(city)}">
 <article class="place yerbox" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-name="{e(name)}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
@@ -980,7 +1008,7 @@ def group_page(key, c, gk):
     if avgs:
         parts = [f'{KM_TYPES[t]["label"].replace(" misafirhanesi", "")} ~{num(KM_TYPES[t]["sivil"])} TL' for t, _ in avgs.most_common(4)]
         pnote = (f'<p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: {e(", ".join(parts))}\'den başlıyor. '
-                 'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
+                 'Tesise göre değişir; kesin fiyatı telefonla sor. <a href="../../fiyatlar/">Kamu personeli ve sivil fiyat tablosu</a>.</p>')
     others = "".join(f'<a href="../../{GPAGE[(key, x[0])]}">{e(x[1])}</a>' for x in GROUPS if x[0] != gk and (key, x[0]) in GPAGE)
     title = f"{name} {lab_l if gk != 'mensup' else 'polisevi ve orduevleri'}: {n} yer, telefon ve adresler | Yolhanı"
     title = title[0].upper() + title[1:]
@@ -1015,6 +1043,153 @@ def group_page(key, c, gk):
     return head(title, desc, path, ld, og=key) + body + foot("../../")
 
 
+# ---------- Fiyat rehberi, ücretsiz kamp, yakınımdakiler ----------
+def simple_ld(slug, label, faq=()):
+    ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": f"{BASE}/"},
+        {"@type": "ListItem", "position": 2, "name": label, "item": f"{BASE}/{slug}/"}]}]
+    if faq:
+        ld.append({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
+    return ld
+
+
+def faq_html(faq):
+    return ('<section class="faq"><h2>Sık sorulan sorular</h2>'
+            + "".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq) + "</section>")
+
+
+def prices_page():
+    allp = [p for c in CITIES.values() for p in c["places"]]
+    cnt = Counter(p["tk"] for p in allp)
+    hub = {"ogr": "../ogretmenevleri/", "dsi": "../kamu-misafirhaneleri/", "ptt": "../kamu-misafirhaneleri/"}
+    rows = sorted([k for k in KAMU_FIYAT if KM_TYPES.get(k, {}).get("sivil")], key=lambda k: KM_TYPES[k]["sivil"])
+    table = "".join(
+        f'<tr><th scope="row">{f"<a href={chr(34)}{hub[k]}{chr(34)}>" if k in hub else ""}{e(KM_TYPES[k]["label"])}{"</a>" if k in hub else ""}'
+        f'{" <small>(çoğunlukla mensuplara)</small>" if KM_TYPES[k]["who"] == "closed" else ""}</th>'
+        f'<td>{num(KAMU_FIYAT[k])} TL</td><td>{num(KM_TYPES[k]["sivil"])} TL</td><td>{cnt[k]}</td></tr>' for k in rows)
+    ogr, dsi = KM_TYPES["ogr"]["sivil"], KM_TYPES["dsi"]["sivil"]
+    faq = [
+        ("Öğretmenevi fiyatları 2026'da ne kadar?", f"Kaynak sitenin 2026 ortalamasına göre öğretmenevlerinde gecelik fiyat kamu personeli için ~{KAMU_FIYAT['ogr']} TL'den, "
+         f"sivil misafir için ~{ogr} TL'den başlıyor. Öğretmenler için fiyat daha düşüktür; kesin fiyat ile ve tesise göre değişir."),
+        ("Sivil vatandaş kamu misafirhanesinde kalabilir mi?", "Çoğunda öncelik kurum ve kamu personelindedir; boş oda olduğunda sivil misafir de kabul edilebilir, "
+         "fiyatı daha yüksektir. Polisevi, orduevi ve adliye tesisleri çoğunlukla yalnızca mensuplarına açıktır."),
+        ("En ucuz kamu misafirhanesi hangisi?", f"Ortalamalara göre sivil misafir için en düşük fiyatlar havalimanı ve TEİAŞ misafirhanelerinde (~{KM_TYPES['dhmi']['sivil']} TL'den), "
+         f"en yüksekler TCDD (~{KM_TYPES['tcdd']['sivil']} TL'den) ve Meteoroloji (~{KM_TYPES['met']['sivil']} TL'den) misafirhanelerinde."),
+        ("Fiyatlar kişi başı mı oda başı mı?", "Tesise göre değişir: öğretmenevlerinin çoğu oda başı, bazı misafirhaneler kişi başı ücret alır. Ararken mutlaka sor."),
+    ]
+    body = f"""<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>Fiyatlar</nav>
+<section class="hero"><div class="hero-text"><h1>Öğretmenevi ve kamu misafirhanesi fiyatları 2026</h1>
+<p class="lead">Gecelik konaklama fiyatları, kamu personeli ve sivil misafir için ayrı ayrı. Rakamlar Türkiye geneli ortalamadır; tesise ve şehre göre değişir.</p>
+<p class="updated">Kaynak: kamumisafirhaneleri.com.tr 2026 ortalamaları. Son güncelleme {TODAY_TR}.</p></div></section>
+<section class="card-box"><div class="tablewrap"><table class="prices">
+<caption>Gecelik fiyat, "…TL'den başlayan" ortalama</caption>
+<thead><tr><th scope="col">Tesis türü</th><th scope="col">Kamu personeli</th><th scope="col">Sivil misafir</th><th scope="col">Sitedeki yer</th></tr></thead>
+<tbody>{table}</tbody></table></div>
+<p class="pnote">Belediye tesisleri, uygulama otelleri, kamp alanları ve pansiyonlar için ortak bir ortalama yayımlanmıyor; bu yerlerin fiyatını tesisi arayarak öğrenebilirsin.</p></section>
+<section class="facts">
+<div><h2>Fiyat neye göre değişir?</h2><p>Şehir, sezon, oda tipi (tek, çift, aile) ve misafirin kim olduğu. Öğretmen ya da kurum personeli en düşük fiyatı öder; sivil misafir daha fazla.</p></div>
+<div><h2>Nasıl yer ayırtılır?</h2><p>Çoğu tesiste online rezervasyon yok. Bir gün önce telefonla arayıp boş oda, sivil kabul ve güncel fiyatı sor; kimliğini yanında taşı.</p></div>
+<div><h2>Tesisleri nerede bulurum?</h2><p><a href="../ogretmenevleri/">Öğretmenevleri</a> ve <a href="../kamu-misafirhaneleri/">kamu misafirhaneleri</a> il il listeleniyor; adres ve telefonlar her yerin sayfasında.</p></div>
+</section>
+{faq_html(faq)}
+"""
+    return head("Öğretmenevi ve Kamu Misafirhanesi Fiyatları 2026 (Sivil ve Kamu Personeli) | Yolhanı",
+                f"2026 gecelik fiyatlar: öğretmenevi sivil ~{ogr} TL, DSİ ~{dsi} TL'den. 15 kamu misafirhanesi türünde kamu personeli ve sivil misafir fiyat tablosu.",
+                "fiyatlar/", simple_ld("fiyatlar", "Fiyatlar", faq), og="yolhani") + body + foot("../")
+
+
+def is_free_camp(p):
+    return p["tk"] == "kamp" and (p["badge"] == "Doğal kamp noktası" or "ücretsiz" in p["note"].lower() or extras(p).get("fee") == "Ücretsiz")
+
+
+def free_camp_page():
+    groups = []
+    total = 0
+    for k, c in sorted(CITIES.items(), key=lambda kv: tr_key(kv[1]["name"])):
+        items = sorted([p for p in c["places"] if is_free_camp(p)], key=lambda p: (tr_key(p["ilce"]), tr_key(p["name"])))
+        if items:
+            total += len(items)
+            groups.append((k, c, items))
+    jump = " ".join(f'<a href="#il-{k}">{e(c["name"])} <span>{len(it)}</span></a>' for k, c, it in groups)
+    secs = "".join(f'<section class="group" id="il-{k}" data-city="{k}" data-cityname="{e(c["name"])}"><div class="ghead"><h2>{e(c["name"])} <small>{len(it)}</small></h2>'
+                   f'<a class="more" href="../{GPAGE.get((k, "kamp"), k + "/")}">{e(c["name"])} kamp alanları →</a></div>'
+                   f'<ul class="places">{"".join(place_card(p, c["name"], "../") for p in it)}</ul></section>' for k, c, it in groups)
+    faq = [
+        ("Türkiye'de ücretsiz kamp nerede yapılır?", f"Bu sayfada {len(groups)} ilde {total} ücretsiz kamp alanı ve doğal kamp noktası listeleniyor. "
+         "Ayrıca birçok belediye yaz aylarında sahil ve göl kenarında ücretsiz ya da sembolik ücretli çadır alanı açıyor."),
+        ("Serbest kamp yasal mı?", "Yasak olmayan doğal alanlarda serbest kamp yapılabilir. Orman içi, milli park ve koruma alanlarında, özel arazide ve kıyı kenar çizgisinde "
+         "kısıtlamalar olabilir. Orman yangını sezonunda ateş yakmak genelde yasaktır; jandarma ya da muhtara haber vermek iyi olur."),
+        ("Doğal kamp noktasında ne var?", "Çoğunda tesis yoktur: su, tuvalet ve çöp için kendi hazırlığını yap, ayrılırken alanı temiz bırak."),
+    ]
+    body = f"""<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>Ücretsiz kamp</nav>
+<section class="hero"><div class="hero-text"><h1>Ücretsiz kamp alanları ve serbest kamp noktaları</h1>
+<p class="lead">Türkiye'de {len(groups)} ilde {total} ücretsiz kamp alanı ve doğal kamp noktası. Çoğunda tesis yok; su, tuvalet ve çöp için hazırlıklı git.</p>
+<p class="updated">Kaynak: OpenStreetMap katkıcıları. Son güncelleme {TODAY_TR}. Alanların durumu değişebilir; yerel kurallara uy.</p></div></section>
+<nav class="ilceler" aria-label="İller"><h2>İller</h2><p class="ilist">{jump}</p></nav>
+<div class="content">{secs}</div>
+{faq_html(faq)}
+"""
+    return head(f"Ücretsiz Kamp Alanları ve Serbest Kamp Noktaları: {total} Yer, {len(groups)} İl | Yolhanı",
+                f"Türkiye'de {total} ücretsiz kamp alanı ve doğal kamp noktası, il il: konum, yol tarifi, imkânlar ve serbest kamp kuralları.",
+                "ucretsiz-kamp/", simple_ld("ucretsiz-kamp", "Ücretsiz kamp", faq), og="kamp-alanlari") + body + foot("../")
+
+
+def near_page():
+    turs = "".join(f'<option value="{i}">{e(g[1])}</option>' for i, g in enumerate(GROUPS))
+    body = f"""<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>Yakınımdakiler</nav>
+<section class="hero"><div class="hero-text"><h1>Yakınımdaki ucuz konaklama</h1>
+<p class="lead">Bulunduğun yere en yakın öğretmenevi, kamu misafirhanesi, kamp alanı ve pansiyonlar, kuş uçuşu mesafesine göre.</p>
+<p class="updated">Konumun yalnızca bu sayfada, senin tarayıcında kullanılır; hiçbir yere gönderilmez.</p></div></section>
+<section class="card-box near-app">
+  <div class="near-ctl">
+    <button class="btn" type="button" id="yk-btn">{icon("pin")}Konumumu kullan</button>
+    <select id="yk-tur" aria-label="Tür"><option value="">Tüm türler</option>{turs}</select>
+    <label class="chk"><input type="checkbox" id="yk-sivil"> Sivil kabul edebilenler</label>
+  </div>
+  <p id="yk-msg" class="count" aria-live="polite">Konum izni istenecek. İzin vermek istemezsen yukarıdaki arama kutusuna il ya da ilçe yaz.</p>
+  <ol id="yk-list" class="near-list"></ol>
+</section>
+<script>
+(() => {{
+  const btn = document.getElementById("yk-btn"), tur = document.getElementById("yk-tur"), siv = document.getElementById("yk-sivil");
+  const msg = document.getElementById("yk-msg"), list = document.getElementById("yk-list");
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({{"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}})[c]);
+  let idx, here;
+  const dist = (a, b, c, d) => {{ const r = Math.PI / 180, x = (d - b) * r * Math.cos((a + c) / 2 * r), y = (c - a) * r; return Math.hypot(x, y) * 6371; }};
+  const draw = () => {{
+    if (!idx || !here) return;
+    const g = tur.value, sv = siv.checked;
+    const rows = idx.p.filter(p => p[6] && (g === "" || p[11] === +g) && (!sv || p[9] !== "closed"))
+      .map(p => [dist(here[0], here[1], p[6], p[7]), p]).sort((a, b) => a[0] - b[0]).slice(0, 40);
+    list.innerHTML = rows.map(([d, p]) => {{
+      const c = idx.c[p[1]], url = "../" + (p[5] || c[0] + "/#p-" + p[4]);
+      const tel = p[8] ? `<a href="tel:+90${{p[8].replace(/\\D/g, "").replace(/^0/, "")}}">${{esc(p[8])}}</a>` : "";
+      const dir = `https://www.google.com/maps/dir/?api=1&destination=${{p[6]}},${{p[7]}}`;
+      return `<li><span class="km">${{d < 10 ? d.toFixed(1) : Math.round(d)}} km${{p[10] === "i" ? "*" : ""}}</span><div><a class="n" href="${{url}}">${{esc(p[0])}}</a>` +
+        `<span>${{esc(idx.t[p[3]])}} · ${{esc(p[2] ? p[2] + ", " : "")}}${{esc(c[1])}}</span></div><div class="acts">${{tel}}<a href="${{dir}}" rel="noopener">Yol tarifi</a></div></li>`;
+    }}).join("");
+    msg.textContent = rows.length ? "En yakın " + rows.length + " yer. * işaretli olanların konumu ilçe merkezine göre, yaklaşıktır." : "Bu seçimle yakında yer bulunamadı.";
+  }};
+  btn.addEventListener("click", () => {{
+    if (!navigator.geolocation) {{ msg.textContent = "Tarayıcın konum özelliğini desteklemiyor."; return; }}
+    msg.textContent = "Konum alınıyor…";
+    navigator.geolocation.getCurrentPosition(async pos => {{
+      here = [pos.coords.latitude, pos.coords.longitude];
+      try {{ idx = idx || await (await fetch("../ara.json")).json(); }} catch {{ msg.textContent = "Liste yüklenemedi, sayfayı yenile."; return; }}
+      draw();
+    }}, err => {{ msg.textContent = err.code === 1 ? "Konum izni verilmedi. Yukarıdaki arama kutusuna il ya da ilçe yazabilirsin." : "Konum alınamadı, tekrar dene."; }},
+    {{ enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }});
+  }});
+  tur.addEventListener("change", draw); siv.addEventListener("change", draw);
+}})();
+</script>
+"""
+    return head("Yakınımdaki Ucuz Konaklama: Öğretmenevi, Misafirhane, Kamp | Yolhanı",
+                "Bulunduğun yere en yakın öğretmenevi, kamu misafirhanesi, kamp alanı ve pansiyonları mesafeye göre listele; telefon ve yol tarifi.",
+                "yakinimda/", simple_ld("yakinimda", "Yakınımdakiler"), og="yolhani") + body + foot("../")
+
+
 # ---------- Üretim ----------
 def write(path, text):
     p = OUT / path
@@ -1045,8 +1220,10 @@ def main():
     write("index.html", home_page())
     write("ara.json", search_index())
     write("hakkinda/index.html", about_page())
+    for slug, fn in (("fiyatlar", prices_page), ("ucretsiz-kamp", free_camp_page), ("yakinimda", near_page)):
+        write(f"{slug}/index.html", fn())
     write("kaydettiklerim/index.html", saved_page())
-    urls = [("", "1.0"), ("hakkinda/", "0.3")]
+    urls = [("", "1.0"), ("hakkinda/", "0.3"), ("fiyatlar/", "0.8"), ("ucretsiz-kamp/", "0.8"), ("yakinimda/", "0.6")]
     for h in HUBS:
         write(f"{h[0]}/index.html", hub_page(*h))
         urls.append((f"{h[0]}/", "0.8"))

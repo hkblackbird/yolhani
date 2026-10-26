@@ -354,3 +354,36 @@ body.filtering .showall { display: none; }
 .isub .showall { justify-self: start; padding: 8px 14px; font-size: .9rem; }
 .fix { font-weight: 600; color: var(--green); text-decoration: none; }
 .fix:hover { text-decoration: underline; color: var(--green); }
+
+/* Menüde ikonlu bağlantı */
+.top nav a .ic { width: 15px; height: 15px; vertical-align: -2px; margin-right: 4px; }
+
+/* Ana sayfa ek bağlantılar */
+.morelinks { display: flex; flex-wrap: wrap; gap: 8px 22px; font-weight: 500; }
+.morelinks a { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Fiyat tablosu */
+.tablewrap { overflow-x: auto; }
+table.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.prices caption { text-align: left; color: var(--muted); font-size: .88rem; padding-bottom: 8px; }
+.prices th, .prices td { padding: 10px 12px; border-bottom: 1px solid var(--line-2); text-align: right; white-space: nowrap; }
+.prices thead th { font-size: .82rem; color: var(--muted); font-weight: 600; border-bottom-color: var(--line); }
+.prices th[scope="row"], .prices thead th:first-child { text-align: left; font-weight: 500; white-space: normal; }
+.prices th small { color: var(--muted); font-weight: 400; }
+.prices tbody tr:hover { background: var(--raise); }
+
+/* Yakınımdakiler */
+.near-app { display: grid; gap: 14px; }
+.near-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.near-ctl select { font: inherit; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.chk { display: inline-flex; align-items: center; gap: 8px; font-size: .95rem; }
+.near-list { list-style: none; display: grid; gap: 0; }
+.near-list li { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-2); }
+.near-list .km { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--sign); }
+.near-list li > div:nth-child(2) { display: grid; }
+.near-list .n { font-weight: 600; color: var(--fg); text-decoration: none; }
+.near-list .n:hover { text-decoration: underline; }
+.near-list span { font-size: .86rem; color: var(--muted); }
+.near-list .acts { border: 0; padding: 0; gap: 14px; font-weight: 600; }
+@media (max-width: 600px) { .near-list li { grid-template-columns: 60px minmax(0, 1fr); } .near-list .acts { grid-column: 2; } }
+.geonote { font-size: .84rem; color: var(--muted); margin-top: -8px; }

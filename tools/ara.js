@@ -87,7 +87,6 @@
     const n = Object.keys(read()).length;
     if (link) { link.hidden = !n; link.querySelector("b").textContent = n; }
   };
-  const layout = document.querySelector(".layout[data-city]");
   const mark = () => {
     const v = read();
     for (const b of document.querySelectorAll(".place .save")) {
@@ -96,12 +95,12 @@
     }
   };
   document.addEventListener("click", ev => {
-    const b = ev.target.closest(".place .save");
-    if (!b || !layout) return;
+    const b = ev.target.closest(".place .save"), host = b && b.closest("[data-city]");
+    if (!b || !host) return;
     const li = b.closest(".place"), v = read();
     if (v[li.id]) delete v[li.id];
     else v[li.id] = { n: li.dataset.name, l: li.dataset.label, i: li.dataset.ilce, t: li.dataset.tel,
-                      c: layout.dataset.city, cn: layout.dataset.cityname, at: Date.now() };
+                      c: host.dataset.city, cn: host.dataset.cityname, at: Date.now() };
     write(v); mark(); count();
   });
 
