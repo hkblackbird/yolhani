@@ -1,6 +1,9 @@
 # Yolhanı statik site
 
-Google'da çıkması için Yolhanı'nın statik sürümü: ana sayfa, 81 il sayfası, hakkında, `sitemap.xml`, `robots.txt`.
+Google'da çıkması için Yolhanı'nın statik sürümü: ana sayfa, 81 il sayfası, 4 rehber sayfası (öğretmenevleri, kamp alanları,
+kamu misafirhaneleri, pansiyon ve hosteller), hakkında, `sitemap.xml`, `robots.txt`, paylaşım görselleri ve uygulama simgeleri.
+
+Canlı site: https://hkblackbird.github.io/yolhani/
 Yorum ve puanlar claude.ai'deki uygulamada kalır; her il sayfası oraya bağlanır.
 
 ## Klasörler
@@ -8,12 +11,14 @@ Yorum ve puanlar claude.ai'deki uygulamada kalır; her il sayfası oraya bağlan
 - `data/yolhani.json`: uygulamadan dışarı aktarılan yer verisi (81 il, 3.204 yer)
 - `tools/build.py`: siteyi üreten betik
 - `tools/site.css`: stil dosyası
+- `tools/og.py`: paylaşım görsellerini (`docs/og/*.jpg`) ve simgeleri Chrome ile üretir
 - `docs/`: üretilen site (GitHub Pages bu klasörü yayınlar)
 
 ## Siteyi yeniden üretmek
 
 ```sh
-python3 tools/build.py https://KULLANICIADI.github.io/yolhani
+python3 tools/build.py https://hkblackbird.github.io/yolhani
+python3 tools/og.py          # sayılar değiştiyse paylaşım görsellerini yenile
 ```
 
 Alan adı alındığında adresi değiştirip tekrar çalıştır:
