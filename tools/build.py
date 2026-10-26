@@ -76,6 +76,8 @@ ICONS = {
     "flag": '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
     "star": '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
     "search": '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+    "bookmark": '<path d="M6 3.5h12v17l-6-4.2-6 4.2z"/>',
+    "map": '<path d="m3 6.5 6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',
     "arch": '<path d="M4 21V11a8 8 0 0 1 16 0v10"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/><path d="M2 21h20"/>',
 }
 SPRITE = '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' + "".join(
@@ -119,7 +121,7 @@ def search_box(rel, cls="", ph="İl, ilçe ya da yer ara"):
             f'<div class="dd" role="listbox" hidden></div></form>')
 
 
-def head(title, desc, path, ld=(), og=None, search=True):
+def head(title, desc, path, ld=(), og=None, search=True, index=True):
     rel = "../" * path.count("/")
     url = f"{BASE}/{path}"
     og_img = f"{BASE}/og/{og or 'yolhani'}.jpg"
@@ -131,7 +133,7 @@ def head(title, desc, path, ld=(), og=None, search=True):
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="{e(url)}">
+<link rel="canonical" href="{e(url)}">{"" if index else chr(10) + '<meta name="robots" content="noindex">'}
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Yolhanı">
 <meta property="og:title" content="{e(title)}">
@@ -164,6 +166,7 @@ def head(title, desc, path, ld=(), og=None, search=True):
     <a href="{rel}kamu-misafirhaneleri/">Misafirhaneler</a>
     <a href="{rel}kamp-alanlari/">Kamp alanları</a>
     <a href="{rel}pansiyon-hostel/">Pansiyonlar</a>
+    <a href="{rel}kaydettiklerim/" id="kayit-link" hidden>{icon("bookmark")}Kaydettiklerim <b></b></a>
   </nav>
 </div></header>
 <main id="icerik" class="wrap">
@@ -207,14 +210,16 @@ def place_card(p, city):
         digits = re.sub(r"\D", "", p["tel"]).lstrip("0")
         tel = f'<a class="act" href="tel:+90{digits}">{icon("phone")}{e(p["tel"])}</a>'
     m = re.search(r"~([\d.]+) TL", p["note"])
-    price = f' · <span class="price" title="Kaynak sitenin sivil misafir için gecelik ortalaması">sivil ~{m.group(1)} TL/gece</span>' if m else ""
     note = "" if m else p["note"]
     fix = issue_url(f"Düzeltme: {p['name']} ({city})",
                     f"Yer: {p['name']}\nİl: {city}\nİlçe: {p['ilce']}\n\nYanlış olan bilgi:\n\nDoğrusu:\n")
     text = " ".join([p["name"], p["ilce"], p["addr"], label]).lower()
-    return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-q="{e(text)}">
+    geo = f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' if p["lat"] else ""
+    return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}" data-q="{e(text)}"{geo}
+  data-name="{e(p["name"])}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
   <div class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h3>{e(p["name"])}</h3>
-  <p class="meta">{e(label)}{f" · {e(p['ilce'])}" if p["ilce"] else ""}{price}</p></div></div>
+  <p class="meta">{e(label)}{f" · {e(p['ilce'])}" if p["ilce"] else ""}</p></div>
+  <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="{e(p["name"])} kaydet">{icon("bookmark")}</button></div>
   {who}
   {f'<p class="note">{e(note)}</p>' if note else ""}
   {f'<p class="addr">{icon("pin")}{e(p["addr"])}</p>' if p["addr"] else ""}
@@ -240,21 +245,62 @@ def place_ld(p, city):
 # ---------- İl sayfası ----------
 FILTER_JS = """<script>
 (() => {
-  const q = document.getElementById("f-q"), sel = document.getElementById("f-ilce"), out = document.getElementById("f-n");
+  const q = document.getElementById("f-q"), sel = document.getElementById("f-ilce"), kim = document.getElementById("f-kim"), out = document.getElementById("f-n");
   if (!q) return;
   const items = [...document.querySelectorAll(".place")];
+  const allow = { herkes: ["open"], sivil: ["open", "prio"] };
   const run = () => {
-    const t = q.value.trim().toLocaleLowerCase("tr"), d = sel.value; let n = 0;
-    for (const li of items) { const ok = (!d || li.dataset.ilce === d) && (!t || li.dataset.q.includes(t)); li.hidden = !ok; n += ok; }
+    const t = q.value.trim().toLocaleLowerCase("tr"), d = sel.value, k = allow[kim.value]; let n = 0;
+    for (const li of items) {
+      const ok = (!d || li.dataset.ilce === d) && (!t || li.dataset.q.includes(t)) && (!k || k.includes(li.dataset.who));
+      li.hidden = !ok; n += ok;
+    }
     for (const s of document.querySelectorAll("section.group")) s.hidden = !s.querySelector(".place:not([hidden])");
-    out.textContent = (t || d) ? n + " yer gösteriliyor" : "";
+    out.textContent = (t || d || k) ? n + " yer gösteriliyor" : "";
+    if (window.yolhaniMap) window.yolhaniMap();
   };
-  q.addEventListener("input", run); sel.addEventListener("change", run);
+  for (const el of [q, sel, kim]) el.addEventListener("input", run);
   document.getElementById("filters").hidden = false;
   const ps = new URLSearchParams(location.search), il = ps.get("ilce");
   if (il && [...sel.options].some(o => o.value === il)) sel.value = il; else if (il) q.value = il;
   if (ps.get("q")) q.value = ps.get("q");
   if (il || ps.get("q")) run();
+
+  // Harita: ilk tıklamada Leaflet yüklenir; görünen ve konumu bilinen yerler işaretlenir
+  const btn = document.getElementById("f-map"), box = document.getElementById("harita");
+  let map, layer;
+  const draw = () => {
+    layer.clearLayers();
+    const pts = items.filter(li => !li.hidden && li.dataset.lat);
+    for (const li of pts) {
+      const m = L.circleMarker([+li.dataset.lat, +li.dataset.lon], { radius: 7, weight: 2, color: "#fff", fillColor: "#6b4426", fillOpacity: .9 });
+      const a = document.createElement("a"); a.href = "#" + li.id; a.textContent = li.dataset.name;
+      const d = document.createElement("div"); d.append(a, document.createElement("br"), li.dataset.label);
+      m.bindPopup(d).addTo(layer);
+    }
+    const noGeo = items.filter(li => !li.hidden && !li.dataset.lat).length;
+    document.getElementById("harita-not").textContent = pts.length + " yer haritada" +
+      (noGeo ? "; " + noGeo + " yerin (çoğu kamu tesisi) konumu henüz yok, kartındaki Yol tarifi ile bulabilirsin." : ".");
+    if (pts.length) map.fitBounds(L.latLngBounds(pts.map(li => [+li.dataset.lat, +li.dataset.lon])).pad(.1), { maxZoom: 13 });
+  };
+  const load = () => new Promise((ok, no) => {
+    const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.append(c);
+    const j = document.createElement("script"); j.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"; j.onload = ok; j.onerror = no; document.head.append(j);
+  });
+  btn.addEventListener("click", async () => {
+    const open = box.hidden; box.hidden = !open; btn.setAttribute("aria-expanded", open);
+    btn.lastChild.textContent = open ? "Haritayı gizle" : "Haritada göster";
+    if (!open) return;
+    if (!map) {
+      try { await load(); } catch { document.getElementById("harita-not").textContent = "Harita yüklenemedi."; return; }
+      map = L.map("harita-in", { scrollWheelZoom: false });
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+      layer = L.layerGroup().addTo(map);
+      window.yolhaniMap = () => { if (!box.hidden) draw(); };
+    }
+    map.invalidateSize(); draw();
+  });
 })();
 </script>"""
 
@@ -307,7 +353,14 @@ def city_page(key, c):
             continue
         h = f"{name} {label[0].lower() + label[1:]}" if gk != "mensup" else label
         toc.append(f'<a href="#{gk}"><span class="ticon t-{ic}">{icon(ic)}</span>{e(label)}<b>{len(items)}</b></a>')
-        secs.append(f'<section class="group" id="{gk}"><h2>{e(h)} <small>{len(items)}</small></h2>'
+        # Kaynak site fiyatı tesis bazında değil, tür bazında ülke ortalaması olarak veriyor; karta değil bölüm başına bir kez yazılır
+        avgs = Counter(p["tk"] for p in items if KM_TYPES.get(p["tk"], {}).get("sivil"))
+        pnote = ""
+        if avgs:
+            parts = [f'{KM_TYPES[t]["label"].replace(" misafirhanesi", "")} ~{num(KM_TYPES[t]["sivil"])} TL' for t, _ in avgs.most_common(4)]
+            pnote = (f'<p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: {e(", ".join(parts))}\'den başlıyor. '
+                     'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
+        secs.append(f'<section class="group" id="{gk}"><h2>{e(h)} <small>{len(items)}</small></h2>{pnote}'
                     f'<ul class="places">{"".join(place_card(p, name) for p in items)}</ul></section>')
 
     opts = "".join(f'<option value="{e(i)}">{e(i)} ({k})</option>' for i, k in sorted(ilceler.items(), key=lambda kv: tr_key(kv[0])))
@@ -327,9 +380,10 @@ def city_page(key, c):
     <h1>{e(loc)} ucuz konaklama</h1>
     <p class="lead">{e(" ".join(intro))}</p>
     <p class="hero-link"><a href="{APP}#{key}" rel="noopener">{e(name)} için gezgin puanları ve yorumları →</a></p>
+    <p class="updated">Son güncelleme {TODAY_TR}. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
   </div>
 </section>
-<div class="layout">
+<div class="layout" data-city="{key}" data-cityname="{e(name)}">
   <aside class="side">
     <nav class="toc" aria-label="Bölümler"><h2>Bu sayfada</h2>{"".join(toc)}<a href="#sss">Sık sorulan sorular</a></nav>
     <div class="near"><h2>Yakındaki iller</h2><ul>{near}</ul></div>
@@ -338,8 +392,11 @@ def city_page(key, c):
     <form class="filters" id="filters" hidden role="search" onsubmit="return false">
       <label class="field">{icon("search")}<input id="f-q" type="search" placeholder="{e(name)} içinde ara: ad, ilçe, adres…" aria-label="Bu ilde ara"></label>
       <select id="f-ilce" aria-label="İlçe"><option value="">Tüm ilçeler</option>{opts}</select>
+      <select id="f-kim" aria-label="Kimler kalabilir"><option value="">Herkes / tüm yerler</option><option value="sivil">Sivil kabul edebilir</option><option value="herkes">Yalnızca herkese açık</option></select>
+      <button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita">{icon("map")}<span>Haritada göster</span></button>
       <span id="f-n" class="count" aria-live="polite"></span>
     </form>
+    <div id="harita" class="citymap" hidden><div id="harita-in"></div><p id="harita-not" class="count"></p></div>
     {"".join(secs)}
     <section id="sss" class="faq"><h2>Sık sorulan sorular</h2>
     {"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
@@ -348,6 +405,7 @@ def city_page(key, c):
       <div><h2>Burada kaldın mı?</h2><p>Ödediğin ücreti, temizliği ve sivil kabul edilip edilmediğini yaz; sonraki gezgin buna göre karar versin.</p></div>
       <a class="btn" href="{APP}#{key}" rel="noopener">{icon("star")}{e(name)} için puan ver</a>
     </section>
+    <p class="addnew">Listede olmayan bir yer mi biliyorsun? <a href="{APP}#ekle" rel="noopener">Buradan ekle</a>; kontrol edildikten sonra siteye girer.</p>
   </div>
 </div>
 {FILTER_JS}
@@ -447,6 +505,15 @@ def about_page():
     return head("Hakkında | Yolhanı", "Yolhanı nedir, nasıl çalışır, veriler nereden geliyor ve hatalı bilgiyi nasıl bildirirsin.", "hakkinda/", og="yolhani") + body + foot("../")
 
 
+def saved_page():
+    body = """<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>Kaydettiklerim</nav>
+<section class="hero"><div class="hero-text"><h1>Kaydettiklerim</h1>
+<p class="lead">Kartlardaki kaydet işaretiyle eklediğin yerler. Liste yalnızca bu tarayıcıda tutulur; başka biriyle paylaşılmaz.</p></div></section>
+<section><div id="kayitlar" class="saved"><p class="empty">Henüz kaydettiğin bir yer yok. Bir il sayfasında kartın sağ üstündeki işarete bas.</p></div></section>
+"""
+    return head("Kaydettiklerim | Yolhanı", "Kaydettiğin konaklama yerleri.", "kaydettiklerim/", index=False) + body + foot("../")
+
+
 def page404():
     s = (head("Sayfa bulunamadı | Yolhanı", "Aradığın sayfa bulunamadı.", "404.html")
          + f'<section class="hero"><div class="hero-text"><h1>Bu yol bir yere çıkmıyor</h1>'
@@ -496,6 +563,7 @@ def main():
     write("index.html", home_page())
     write("ara.json", search_index())
     write("hakkinda/index.html", about_page())
+    write("kaydettiklerim/index.html", saved_page())
     urls = [("", "1.0"), ("hakkinda/", "0.3")]
     for h in HUBS:
         write(f"{h[0]}/index.html", hub_page(*h))

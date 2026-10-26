@@ -74,3 +74,57 @@
     document.addEventListener("click", ev => { if (!form.contains(ev.target)) dd.hidden = true; });
   }
 })();
+
+// Kaydettiklerim: kartlardaki kaydet düğmesi; liste yalnızca bu tarayıcıda (localStorage) tutulur
+(() => {
+  const KEY = "yolhani-kayit";
+  const root = document.currentScript?.dataset.root ?? document.querySelector("script[data-root]")?.dataset.root ?? "";
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const read = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+  const write = v => { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {} };
+  const link = document.getElementById("kayit-link");
+  const count = () => {
+    const n = Object.keys(read()).length;
+    if (link) { link.hidden = !n; link.querySelector("b").textContent = n; }
+  };
+  const layout = document.querySelector(".layout[data-city]");
+  const mark = () => {
+    const v = read();
+    for (const b of document.querySelectorAll(".place .save")) {
+      const on = !!v[b.closest(".place").id];
+      b.setAttribute("aria-pressed", on); b.title = on ? "Kaydedildi (kaldırmak için bas)" : "Kaydet";
+    }
+  };
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest(".place .save");
+    if (!b || !layout) return;
+    const li = b.closest(".place"), v = read();
+    if (v[li.id]) delete v[li.id];
+    else v[li.id] = { n: li.dataset.name, l: li.dataset.label, i: li.dataset.ilce, t: li.dataset.tel,
+                      c: layout.dataset.city, cn: layout.dataset.cityname, at: Date.now() };
+    write(v); mark(); count();
+  });
+
+  const list = document.getElementById("kayitlar");
+  const render = () => {
+    const v = read(), ids = Object.keys(v);
+    if (!ids.length) { list.innerHTML = '<p class="empty">Henüz kaydettiğin bir yer yok. Bir il sayfasında kartın sağ üstündeki işarete bas.</p>'; return; }
+    const by = {};
+    for (const id of ids) (by[v[id].cn] ||= []).push(id);
+    list.innerHTML = Object.keys(by).sort((a, b) => a.localeCompare(b, "tr")).map(cn =>
+      `<h2>${esc(cn)} <small>${by[cn].length}</small></h2><ul>` + by[cn].map(id => {
+        const x = v[id], tel = x.t ? `<a href="tel:+90${esc(x.t.replace(/\D/g, "").replace(/^0/, ""))}">${esc(x.t)}</a>` : "";
+        return `<li><div><a class="n" href="${root}${esc(x.c)}/#${esc(id)}">${esc(x.n)}</a><span>${esc(x.l)}${x.i ? " · " + esc(x.i) : ""}</span></div>` +
+          `${tel}<button type="button" class="rm" data-id="${esc(id)}">Kaldır</button></li>`;
+      }).join("") + "</ul>").join("");
+  };
+  if (list) {
+    list.addEventListener("click", ev => {
+      const b = ev.target.closest(".rm"); if (!b) return;
+      const v = read(); delete v[b.dataset.id]; write(v); render(); count();
+    });
+    render();
+  }
+  mark(); count();
+  addEventListener("storage", () => { mark(); count(); if (list) render(); });
+})();
