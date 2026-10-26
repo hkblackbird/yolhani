@@ -11,6 +11,7 @@ Yorum ve puanlar claude.ai'deki uygulamada kalır; her il sayfası oraya bağlan
 - `data/yolhani.json`: uygulamadan dışarı aktarılan yer verisi (81 il, 3.204 yer)
 - `tools/build.py`: siteyi üreten betik
 - `tools/site.css`: stil dosyası
+- `tools/ara.js`: site içi arama (üst menüdeki kutu ve ana sayfadaki arama); `docs/ara.json` dizinini kullanır
 - `tools/og.py`: paylaşım görsellerini (`docs/og/*.jpg`) ve simgeleri Chrome ile üretir
 - `docs/`: üretilen site (GitHub Pages bu klasörü yayınlar)
 
