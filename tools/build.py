@@ -321,8 +321,6 @@ def city_page(key, c):
         {"@context": "https://schema.org", "@type": "ItemList", "name": f"{loc} ucuz konaklama", "numberOfItems": n,
          "itemListElement": [{"@type": "ListItem", "position": i + 1, "item": place_ld(p, name)} for i, p in enumerate(places[:200])]},
     ]
-    stats = "".join(f'<div><dt>{k}</dt><dd>{v}</dd></div>' for k, v in
-                    [("Toplam", n), ("Öğretmenevi", cnt["ogretmenevi"]), ("Misafirhane", kamu), ("Kamp", cnt["kamp"]), ("Pansiyon", cnt["pansiyon"])] if v)
     body = f"""<nav class="crumbs" aria-label="Konum"><a href="../">Yolhanı</a><span>›</span>{e(name)}</nav>
 <section class="hero city">
   <div class="hero-text">
@@ -330,7 +328,6 @@ def city_page(key, c):
     <p class="lead">{e(" ".join(intro))}</p>
     <p class="hero-link"><a href="{APP}#{key}" rel="noopener">{e(name)} için gezgin puanları ve yorumları →</a></p>
   </div>
-  <dl class="stats">{stats}</dl>
 </section>
 <div class="layout">
   <aside class="side">
@@ -390,8 +387,6 @@ def home_page():
     {search_box("", "hero-q", "İl, ilçe ya da yer adı yaz. Örn. Kaş, Sivas DSİ")}
 
   </div>
-  <dl class="stats"><div><dt>İl</dt><dd>81</dd></div><div><dt>Yer</dt><dd>{num(total)}</dd></div>
-    <div><dt>Öğretmenevi ve misafirhane</dt><dd>{num(kamu)}</dd></div><div><dt>Kamp alanı</dt><dd>{num(grp['kamp'])}</dd></div></dl>
 </section>
 <section class="map card-box"><div class="sec-head"><h2>Haritadan il seç</h2><p>Sayılar o ildeki yer sayısı</p></div>
 <div class="mapscroll"><svg viewBox="0 0 {MAP['w']} {MAP['h']}" role="img" aria-label="Türkiye il haritası">{paths}<g class="labels">{labels}</g></svg></div>
@@ -418,7 +413,6 @@ def hub_page(slug, gk, label, title, tname, kmk):
 <section class="hero">
   <div class="hero-text"><h1>{e(title.split(":")[0])}</h1>
   <p class="lead">{e(t.get("desc", ""))} Türkiye'de {num(grp[gk])} yer, {len(rows)} ilde listeleniyor.</p></div>
-  <dl class="stats"><div><dt>Yer</dt><dd>{num(grp[gk])}</dd></div><div><dt>İl</dt><dd>{len(rows)}</dd></div></dl>
 </section>
 <section class="facts">{"".join(f'<div><h2>{e(q)}</h2><p>{e(a)}</p></div>' for q, a in facts if a)}</section>
 <section><div class="sec-head"><h2>İl il {e(label.lower())}</h2></div><ul class="cities">{"".join(rows)}</ul></section>

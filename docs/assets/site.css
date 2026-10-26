@@ -70,7 +70,8 @@ ul, ol { margin: 0; padding: 0; }
 .crumbs { display: flex; gap: 8px; font-size: .88rem; color: var(--muted); margin-bottom: -28px; }
 .crumbs a { color: var(--muted); }
 .hero { position: relative; background: linear-gradient(160deg, var(--sign) 0%, var(--sign-2) 100%); color: var(--sign-fg);
-  border-radius: 20px; padding: clamp(28px, 5vw, 56px); display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: end; }
+  border-radius: 20px; padding: clamp(28px, 5vw, 56px); display: grid; }
+.hero-text { max-width: 760px; }
 .hero-text { display: grid; gap: 16px; position: relative; z-index: 1; }
 .hero-link a { color: var(--sign-fg); font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255,255,255,.4); text-underline-offset: 4px; }
 .hero-link a:hover { text-decoration-color: currentColor; }
