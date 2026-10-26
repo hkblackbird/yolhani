@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hkblackbird.github.io/yolhani/sitemap.xml
