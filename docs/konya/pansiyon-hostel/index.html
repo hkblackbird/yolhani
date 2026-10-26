@@ -22,10 +22,9 @@
 <link rel="icon" href="../../assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 <link rel="manifest" href="../../manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="../../assets/site.css">
+<link rel="preload" href="../../assets/fonts/worksans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../../assets/fonts/zillaslab-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../assets/site.css?v=09f2d27f">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": "https://hkblackbird.github.io/yolhani/"}, {"@type": "ListItem", "position": 2, "name": "Konya", "item": "https://hkblackbird.github.io/yolhani/konya/"}, {"@type": "ListItem", "position": 3, "name": "Pansiyon ve hosteller", "item": "https://hkblackbird.github.io/yolhani/konya/pansiyon-hostel/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "ItemList", "name": "Konya pansiyon ve hosteller", "numberOfItems": 20, "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w452924949", "name": "Philomelion Köyevleri"}, {"@type": "ListItem", "position": 2, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n4391495890", "name": "Çankaya Pansiyon"}, {"@type": "ListItem", "position": 3, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n6829975914", "name": "Belediye Misafirhanesi"}, {"@type": "ListItem", "position": 4, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n2654228851", "name": "Halkapınar İlkokul Pansiyonu"}, {"@type": "ListItem", "position": 5, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w441830007", "name": "Köy odası"}, {"@type": "ListItem", "position": 6, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n4328186676", "name": "Dervish Brothers Hostel"}, {"@type": "ListItem", "position": 7, "url": "https://hkblackbird.github.io/yolhani/konya/dunya-mevlana-vakfi-misafirhanesi/", "name": "Dünya Mevlâna Vakfı Misafirhanesi"}, {"@type": "ListItem", "position": 8, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w491583505", "name": "Kent Konağı 3"}, {"@type": "ListItem", "position": 9, "url": "https://hkblackbird.github.io/yolhani/konya/konya-ogretmenevi/", "name": "Konya Öğretmenevi"}, {"@type": "ListItem", "position": 10, "url": "https://hkblackbird.github.io/yolhani/konya/mevlana-ogretmenevi/", "name": "Mevlana Öğretmenevi"}, {"@type": "ListItem", "position": 11, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w366658129", "name": "Konevi-Der Sosyal Tesisi"}, {"@type": "ListItem", "position": 12, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w527826449", "name": "Sare Özkaşıkçı Yibo Pansiyonu"}, {"@type": "ListItem", "position": 13, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w290805710", "name": "TCDD Misafirhanesi"}, {"@type": "ListItem", "position": 14, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n4734933122", "name": "TEİAŞ 9.Bölge Misafirhanesi"}, {"@type": "ListItem", "position": 15, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w287702193", "name": "Vali Ahmet Kayhan Öğretmenevi"}, {"@type": "ListItem", "position": 16, "url": "https://hkblackbird.github.io/yolhani/konya/hostelida/", "name": "Hostelida"}, {"@type": "ListItem", "position": 17, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n5114853626", "name": "Karayolları Lojmanları"}, {"@type": "ListItem", "position": 18, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-n5129092285", "name": "Mevlana Kız Yurdu"}, {"@type": "ListItem", "position": 19, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w936286578", "name": "Tol Köyü Köy Odası"}, {"@type": "ListItem", "position": 20, "url": "https://hkblackbird.github.io/yolhani/konya/#p-o-w424705779", "name": "Tuzlukçu Öğretmen Evi"}]}</script>
 </head>
 <body>
@@ -48,7 +47,7 @@
   <div class="hero-text">
     <h1>Konya pansiyon ve hosteller</h1>
     <p class="lead">Konya&#x27;da 20 pansiyon / hostel listeleniyor; en çok Karatay, Meram, Selçuklu ilçelerinde. 3 tanesinin telefonu var.</p>
-    <p class="updated">Son güncelleme 26 Ekim 2026. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
+    <p class="updated">Son güncelleme 27 Ekim 2026. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
   </div>
 </section>
 <section class="facts"><div><h2>Kimler kalabilir?</h2><p>Herkes</p></div><div><h2>Nasıl ayırtılır?</h2><p>Rezervasyon siteleri ya da telefonla.</p></div><div><h2>İpucu</h2><p>Köylerde muhtara sormak çoğu zaman en kısa yol.</p></div></section>
@@ -67,7 +66,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=38.39595%2C31.35318" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Philomelion%20K%C3%B6yevleri%20%28Konya%29&amp;body=Yer%3A%20Philomelion%20K%C3%B6yevleri%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Ak%C5%9Fehir%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Philomelion%20K%C3%B6yevleri%20%28Konya%29&amp;body=Yer%3A%20Philomelion%20K%C3%B6yevleri%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Ak%C5%9Fehir%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n4391495890" data-ilce="Beyşehir" data-who="open" data-q="çankaya pansiyon beyşehir  hostel" data-lat="37.6785" data-lon="31.72204"
   data-name="Çankaya Pansiyon" data-label="Hostel" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Çankaya Pansiyon</h3>
@@ -77,7 +76,7 @@
   <p class="note">Yatakhane odalarda kişi başı yatak kiralanabilir.</p>
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.6785%2C31.72204" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20%C3%87ankaya%20Pansiyon%20%28Konya%29&amp;body=Yer%3A%20%C3%87ankaya%20Pansiyon%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Bey%C5%9Fehir%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20%C3%87ankaya%20Pansiyon%20%28Konya%29&amp;body=Yer%3A%20%C3%87ankaya%20Pansiyon%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Bey%C5%9Fehir%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n6829975914" data-ilce="Doğanhisar" data-who="open" data-q="belediye misafirhanesi doğanhisar  pansiyon" data-lat="38.14929" data-lon="31.67957"
   data-name="Belediye Misafirhanesi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Belediye Misafirhanesi</h3>
@@ -87,7 +86,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=38.14929%2C31.67957" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Belediye%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20Belediye%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Do%C4%9Fanhisar%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Belediye%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20Belediye%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Do%C4%9Fanhisar%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n2654228851" data-ilce="Halkapınar" data-who="open" data-q="halkapınar i̇lkokul pansiyonu halkapınar  pansiyon" data-lat="37.44051" data-lon="34.19119"
   data-name="Halkapınar İlkokul Pansiyonu" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Halkapınar İlkokul Pansiyonu</h3>
@@ -97,7 +96,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.44051%2C34.19119" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Halkap%C4%B1nar%20%C4%B0lkokul%20Pansiyonu%20%28Konya%29&amp;body=Yer%3A%20Halkap%C4%B1nar%20%C4%B0lkokul%20Pansiyonu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Halkap%C4%B1nar%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Halkap%C4%B1nar%20%C4%B0lkokul%20Pansiyonu%20%28Konya%29&amp;body=Yer%3A%20Halkap%C4%B1nar%20%C4%B0lkokul%20Pansiyonu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Halkap%C4%B1nar%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w441830007" data-ilce="Ilgın" data-who="open" data-q="köy odası ilgın  pansiyon" data-lat="38.05266" data-lon="31.86132"
   data-name="Köy odası" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Köy odası</h3>
@@ -107,7 +106,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=38.05266%2C31.86132" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20K%C3%B6y%20odas%C4%B1%20%28Konya%29&amp;body=Yer%3A%20K%C3%B6y%20odas%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Ilg%C4%B1n%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20K%C3%B6y%20odas%C4%B1%20%28Konya%29&amp;body=Yer%3A%20K%C3%B6y%20odas%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Ilg%C4%B1n%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n4328186676" data-ilce="Karatay" data-who="open" data-q="dervish brothers hostel karatay  hostel" data-lat="37.8695" data-lon="32.50332"
   data-name="Dervish Brothers Hostel" data-label="Hostel" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Dervish Brothers Hostel</h3>
@@ -117,17 +116,17 @@
   <p class="note">Yatakhane odalarda kişi başı yatak kiralanabilir.</p>
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.8695%2C32.50332" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Dervish%20Brothers%20Hostel%20%28Konya%29&amp;body=Yer%3A%20Dervish%20Brothers%20Hostel%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Dervish%20Brothers%20Hostel%20%28Konya%29&amp;body=Yer%3A%20Dervish%20Brothers%20Hostel%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n10279734333" data-ilce="Karatay" data-who="open" data-q="dünya mevlâna vakfı misafirhanesi karatay  hostel" data-lat="37.8721" data-lon="32.50577"
-  data-name="Dünya Mevlâna Vakfı Misafirhanesi" data-label="Hostel" data-tel="(332) 352 57 57">
+  data-name="Dünya Mevlâna Vakfı Misafirhanesi" data-label="Hostel" data-tel="0332 352 57 57">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3><a href="../../konya/dunya-mevlana-vakfi-misafirhanesi/">Dünya Mevlâna Vakfı Misafirhanesi</a></h3>
   <p class="meta">Hostel · Karatay</p></div>
   <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="Dünya Mevlâna Vakfı Misafirhanesi kaydet"><svg class="ic" aria-hidden="true"><use href="#i-bookmark"/></svg></button></div>
   <span class="who open">Herkes</span>
   <p class="note">Yatakhane odalarda kişi başı yatak kiralanabilir.</p>
   
-  <div class="acts"><a class="act" href="tel:+903323525757"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>(332) 352 57 57</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.8721%2C32.50577" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20D%C3%BCnya%20Mevl%C3%A2na%20Vakf%C4%B1%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20D%C3%BCnya%20Mevl%C3%A2na%20Vakf%C4%B1%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <div class="acts"><a class="act" href="tel:+903323525757"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0332 352 57 57</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.8721%2C32.50577" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20D%C3%BCnya%20Mevl%C3%A2na%20Vakf%C4%B1%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20D%C3%BCnya%20Mevl%C3%A2na%20Vakf%C4%B1%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0ASayfa%3A%20https%3A//hkblackbird.github.io/yolhani/konya/dunya-mevlana-vakfi-misafirhanesi/%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w491583505" data-ilce="Karatay" data-who="open" data-q="kent konağı 3 karatay  pansiyon" data-lat="37.87052" data-lon="32.51031"
   data-name="Kent Konağı 3" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Kent Konağı 3</h3>
@@ -137,17 +136,17 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87052%2C32.51031" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Kent%20Kona%C4%9F%C4%B1%203%20%28Konya%29&amp;body=Yer%3A%20Kent%20Kona%C4%9F%C4%B1%203%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Kent%20Kona%C4%9F%C4%B1%203%20%28Konya%29&amp;body=Yer%3A%20Kent%20Kona%C4%9F%C4%B1%203%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w1338384985" data-ilce="Karatay" data-who="open" data-q="konya öğretmenevi karatay  pansiyon" data-lat="37.87304" data-lon="32.49507"
-  data-name="Konya Öğretmenevi" data-label="Pansiyon" data-tel="(332) 351 22 65">
+  data-name="Konya Öğretmenevi" data-label="Pansiyon" data-tel="0332 351 22 65">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3><a href="../../konya/konya-ogretmenevi/">Konya Öğretmenevi</a></h3>
   <p class="meta">Pansiyon · Karatay</p></div>
   <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="Konya Öğretmenevi kaydet"><svg class="ic" aria-hidden="true"><use href="#i-bookmark"/></svg></button></div>
   <span class="who open">Herkes</span>
   
   
-  <div class="acts"><a class="act" href="tel:+903323512265"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>(332) 351 22 65</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87304%2C32.49507" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Konya%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Konya%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <div class="acts"><a class="act" href="tel:+903323512265"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0332 351 22 65</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87304%2C32.49507" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Konya%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Konya%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0ASayfa%3A%20https%3A//hkblackbird.github.io/yolhani/konya/konya-ogretmenevi/%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w1338962874" data-ilce="Karatay" data-who="open" data-q="mevlana öğretmenevi karatay  pansiyon" data-lat="37.8656" data-lon="32.5305"
   data-name="Mevlana Öğretmenevi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3><a href="../../konya/mevlana-ogretmenevi/">Mevlana Öğretmenevi</a></h3>
@@ -157,7 +156,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.8656%2C32.5305" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Mevlana%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Mevlana%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Mevlana%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Mevlana%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Karatay%0ASayfa%3A%20https%3A//hkblackbird.github.io/yolhani/konya/mevlana-ogretmenevi/%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w366658129" data-ilce="Meram" data-who="open" data-q="konevi-der sosyal tesisi meram  pansiyon" data-lat="37.82467" data-lon="32.44531"
   data-name="Konevi-Der Sosyal Tesisi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Konevi-Der Sosyal Tesisi</h3>
@@ -167,7 +166,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.82467%2C32.44531" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Konevi-Der%20Sosyal%20Tesisi%20%28Konya%29&amp;body=Yer%3A%20Konevi-Der%20Sosyal%20Tesisi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Konevi-Der%20Sosyal%20Tesisi%20%28Konya%29&amp;body=Yer%3A%20Konevi-Der%20Sosyal%20Tesisi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w527826449" data-ilce="Meram" data-who="open" data-q="sare özkaşıkçı yibo pansiyonu meram  pansiyon" data-lat="37.87492" data-lon="32.44789"
   data-name="Sare Özkaşıkçı Yibo Pansiyonu" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Sare Özkaşıkçı Yibo Pansiyonu</h3>
@@ -177,7 +176,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87492%2C32.44789" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Sare%20%C3%96zka%C5%9F%C4%B1k%C3%A7%C4%B1%20Yibo%20Pansiyonu%20%28Konya%29&amp;body=Yer%3A%20Sare%20%C3%96zka%C5%9F%C4%B1k%C3%A7%C4%B1%20Yibo%20Pansiyonu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Sare%20%C3%96zka%C5%9F%C4%B1k%C3%A7%C4%B1%20Yibo%20Pansiyonu%20%28Konya%29&amp;body=Yer%3A%20Sare%20%C3%96zka%C5%9F%C4%B1k%C3%A7%C4%B1%20Yibo%20Pansiyonu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w290805710" data-ilce="Meram" data-who="open" data-q="tcdd misafirhanesi meram  pansiyon" data-lat="37.86595" data-lon="32.47685"
   data-name="TCDD Misafirhanesi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>TCDD Misafirhanesi</h3>
@@ -187,7 +186,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.86595%2C32.47685" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20TCDD%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20TCDD%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20TCDD%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20TCDD%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n4734933122" data-ilce="Meram" data-who="open" data-q="tei̇aş 9.bölge misafirhanesi meram  pansiyon" data-lat="37.86065" data-lon="32.46572"
   data-name="TEİAŞ 9.Bölge Misafirhanesi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>TEİAŞ 9.Bölge Misafirhanesi</h3>
@@ -197,7 +196,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.86065%2C32.46572" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20TE%C4%B0A%C5%9E%209.B%C3%B6lge%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20TE%C4%B0A%C5%9E%209.B%C3%B6lge%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20TE%C4%B0A%C5%9E%209.B%C3%B6lge%20Misafirhanesi%20%28Konya%29&amp;body=Yer%3A%20TE%C4%B0A%C5%9E%209.B%C3%B6lge%20Misafirhanesi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w287702193" data-ilce="Meram" data-who="open" data-q="vali ahmet kayhan öğretmenevi meram  pansiyon" data-lat="37.86553" data-lon="32.487"
   data-name="Vali Ahmet Kayhan Öğretmenevi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Vali Ahmet Kayhan Öğretmenevi</h3>
@@ -207,17 +206,17 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.86553%2C32.487" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Vali%20Ahmet%20Kayhan%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Vali%20Ahmet%20Kayhan%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Vali%20Ahmet%20Kayhan%20%C3%96%C4%9Fretmenevi%20%28Konya%29&amp;body=Yer%3A%20Vali%20Ahmet%20Kayhan%20%C3%96%C4%9Fretmenevi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Meram%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n11579043669" data-ilce="Selçuklu" data-who="open" data-q="hostelida selçuklu  hostel" data-lat="37.87141" data-lon="32.48744"
-  data-name="Hostelida" data-label="Hostel" data-tel="(332) 351 08 14">
+  data-name="Hostelida" data-label="Hostel" data-tel="0332 351 08 14">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3><a href="../../konya/hostelida/">Hostelida</a></h3>
   <p class="meta">Hostel · Selçuklu</p></div>
   <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="Hostelida kaydet"><svg class="ic" aria-hidden="true"><use href="#i-bookmark"/></svg></button></div>
   <span class="who open">Herkes</span>
   <p class="note">Yatakhane odalarda kişi başı yatak kiralanabilir.</p>
   
-  <div class="acts"><a class="act" href="tel:+903323510814"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>(332) 351 08 14</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87141%2C32.48744" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Hostelida%20%28Konya%29&amp;body=Yer%3A%20Hostelida%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <div class="acts"><a class="act" href="tel:+903323510814"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>0332 351 08 14</a><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.87141%2C32.48744" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Hostelida%20%28Konya%29&amp;body=Yer%3A%20Hostelida%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0ASayfa%3A%20https%3A//hkblackbird.github.io/yolhani/konya/hostelida/%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n5114853626" data-ilce="Selçuklu" data-who="open" data-q="karayolları lojmanları selçuklu  pansiyon" data-lat="37.90911" data-lon="32.51401"
   data-name="Karayolları Lojmanları" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Karayolları Lojmanları</h3>
@@ -227,7 +226,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.90911%2C32.51401" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Karayollar%C4%B1%20Lojmanlar%C4%B1%20%28Konya%29&amp;body=Yer%3A%20Karayollar%C4%B1%20Lojmanlar%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Karayollar%C4%B1%20Lojmanlar%C4%B1%20%28Konya%29&amp;body=Yer%3A%20Karayollar%C4%B1%20Lojmanlar%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-n5129092285" data-ilce="Selçuklu" data-who="open" data-q="mevlana kız yurdu selçuklu  pansiyon" data-lat="37.88921" data-lon="32.48537"
   data-name="Mevlana Kız Yurdu" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Mevlana Kız Yurdu</h3>
@@ -237,7 +236,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.88921%2C32.48537" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Mevlana%20K%C4%B1z%20Yurdu%20%28Konya%29&amp;body=Yer%3A%20Mevlana%20K%C4%B1z%20Yurdu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Mevlana%20K%C4%B1z%20Yurdu%20%28Konya%29&amp;body=Yer%3A%20Mevlana%20K%C4%B1z%20Yurdu%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Sel%C3%A7uklu%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w936286578" data-ilce="Seydişehir" data-who="open" data-q="tol köyü köy odası seydişehir  pansiyon" data-lat="37.57545" data-lon="31.92376"
   data-name="Tol Köyü Köy Odası" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Tol Köyü Köy Odası</h3>
@@ -247,7 +246,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=37.57545%2C31.92376" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Tol%20K%C3%B6y%C3%BC%20K%C3%B6y%20Odas%C4%B1%20%28Konya%29&amp;body=Yer%3A%20Tol%20K%C3%B6y%C3%BC%20K%C3%B6y%20Odas%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Seydi%C5%9Fehir%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Tol%20K%C3%B6y%C3%BC%20K%C3%B6y%20Odas%C4%B1%20%28Konya%29&amp;body=Yer%3A%20Tol%20K%C3%B6y%C3%BC%20K%C3%B6y%20Odas%C4%B1%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Seydi%C5%9Fehir%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li><li class="place" id="p-o-w424705779" data-ilce="Tuzlukçu" data-who="open" data-q="tuzlukçu öğretmen evi tuzlukçu  pansiyon" data-lat="38.4735" data-lon="31.62801"
   data-name="Tuzlukçu Öğretmen Evi" data-label="Pansiyon" data-tel="">
   <div class="ph"><span class="ticon t-pans"><svg class="ic" aria-hidden="true"><use href="#i-pans"/></svg></span><div><h3>Tuzlukçu Öğretmen Evi</h3>
@@ -257,7 +256,7 @@
   
   
   <div class="acts"><a class="act" href="https://www.google.com/maps/search/?api=1&amp;query=38.4735%2C31.62801" rel="noopener"><svg class="ic" aria-hidden="true"><use href="#i-route"/></svg>Yol tarifi</a>
-  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Tuzluk%C3%A7u%20%C3%96%C4%9Fretmen%20Evi%20%28Konya%29&amp;body=Yer%3A%20Tuzluk%C3%A7u%20%C3%96%C4%9Fretmen%20Evi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Tuzluk%C3%A7u%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
+  <a class="fix" href="https://github.com/hkblackbird/yolhani/issues/new?title=D%C3%BCzeltme%3A%20Tuzluk%C3%A7u%20%C3%96%C4%9Fretmen%20Evi%20%28Konya%29&amp;body=Yer%3A%20Tuzluk%C3%A7u%20%C3%96%C4%9Fretmen%20Evi%0A%C4%B0l%3A%20Konya%0A%C4%B0l%C3%A7e%3A%20Tuzluk%C3%A7u%0ASayfa%3A%20%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow" title="Bu yerin bilgisi hatalıysa bildir">Düzelt</a></div>
 </li></ul></section>
   </div>
 </div>
@@ -271,14 +270,15 @@
       <li><a href="../../kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="../../pansiyon-hostel/">Pansiyon ve hosteller</a></li></ul></div>
     <div><h2>Popüler iller</h2><ul><li><a href="../../antalya/">Antalya</a></li><li><a href="../../mugla/">Muğla</a></li><li><a href="../../istanbul/">İstanbul</a></li><li><a href="../../izmir/">İzmir</a></li><li><a href="../../canakkale/">Çanakkale</a></li><li><a href="../../nevsehir/">Nevşehir</a></li><li><a href="../../balikesir/">Balıkesir</a></li><li><a href="../../konya/">Konya</a></li></ul></div>
     <div><h2>Yolhanı</h2><ul>
-      <li><a href="../../hakkinda/">Hakkında</a></li><li><a href="https://claude.ai/artifact/96B435W52N7zqGfSPT3tTZ" rel="noopener">Puan ver ve yorum yaz</a></li>
-      <li><a href="https://github.com/hkblackbird/yolhani/issues/new?title=Bilgi%20d%C3%BCzeltme&body=Hangi%20sayfa%20ve%20hangi%20yer%3F%0A%0ADo%C4%9Fru%20bilgi%3A%0A" rel="noopener">Hata bildir</a></li>
+      <li><a href="../../hakkinda/">Hakkında</a></li>
+      
+      <li><a href="https://github.com/hkblackbird/yolhani/issues/new?title=Bilgi%20d%C3%BCzeltme&amp;body=Hangi%20sayfa%20ve%20hangi%20yer%3F%0A%0AYanl%C4%B1%C5%9F%20olan%20bilgi%3A%0A%0ADo%C4%9Frusu%3A%0A" rel="noopener nofollow">Hata bildir</a></li>
       <li><a href="https://github.com/hkblackbird/yolhani" rel="noopener">GitHub</a></li></ul></div>
   </div>
   <div class="in allcities"><h2>Tüm iller</h2><p><a href="../../adana/">Adana</a> <a href="../../adiyaman/">Adıyaman</a> <a href="../../afyonkarahisar/">Afyonkarahisar</a> <a href="../../agri/">Ağrı</a> <a href="../../aksaray/">Aksaray</a> <a href="../../amasya/">Amasya</a> <a href="../../ankara/">Ankara</a> <a href="../../antalya/">Antalya</a> <a href="../../ardahan/">Ardahan</a> <a href="../../artvin/">Artvin</a> <a href="../../aydin/">Aydın</a> <a href="../../balikesir/">Balıkesir</a> <a href="../../bartin/">Bartın</a> <a href="../../batman/">Batman</a> <a href="../../bayburt/">Bayburt</a> <a href="../../bilecik/">Bilecik</a> <a href="../../bingol/">Bingöl</a> <a href="../../bitlis/">Bitlis</a> <a href="../../bolu/">Bolu</a> <a href="../../burdur/">Burdur</a> <a href="../../bursa/">Bursa</a> <a href="../../canakkale/">Çanakkale</a> <a href="../../cankiri/">Çankırı</a> <a href="../../corum/">Çorum</a> <a href="../../denizli/">Denizli</a> <a href="../../diyarbakir/">Diyarbakır</a> <a href="../../duzce/">Düzce</a> <a href="../../edirne/">Edirne</a> <a href="../../elazig/">Elazığ</a> <a href="../../erzincan/">Erzincan</a> <a href="../../erzurum/">Erzurum</a> <a href="../../eskisehir/">Eskişehir</a> <a href="../../gaziantep/">Gaziantep</a> <a href="../../giresun/">Giresun</a> <a href="../../gumushane/">Gümüşhane</a> <a href="../../hakkari/">Hakkari</a> <a href="../../hatay/">Hatay</a> <a href="../../igdir/">Iğdır</a> <a href="../../isparta/">Isparta</a> <a href="../../istanbul/">İstanbul</a> <a href="../../izmir/">İzmir</a> <a href="../../kahramanmaras/">Kahramanmaraş</a> <a href="../../karabuk/">Karabük</a> <a href="../../karaman/">Karaman</a> <a href="../../kars/">Kars</a> <a href="../../kastamonu/">Kastamonu</a> <a href="../../kayseri/">Kayseri</a> <a href="../../kirikkale/">Kırıkkale</a> <a href="../../kirklareli/">Kırklareli</a> <a href="../../kirsehir/">Kırşehir</a> <a href="../../kilis/">Kilis</a> <a href="../../kocaeli/">Kocaeli</a> <a href="../../konya/">Konya</a> <a href="../../kutahya/">Kütahya</a> <a href="../../malatya/">Malatya</a> <a href="../../manisa/">Manisa</a> <a href="../../mardin/">Mardin</a> <a href="../../mersin/">Mersin</a> <a href="../../mugla/">Muğla</a> <a href="../../mus/">Muş</a> <a href="../../nevsehir/">Nevşehir</a> <a href="../../nigde/">Niğde</a> <a href="../../ordu/">Ordu</a> <a href="../../osmaniye/">Osmaniye</a> <a href="../../rize/">Rize</a> <a href="../../sakarya/">Sakarya</a> <a href="../../samsun/">Samsun</a> <a href="../../siirt/">Siirt</a> <a href="../../sinop/">Sinop</a> <a href="../../sivas/">Sivas</a> <a href="../../sanliurfa/">Şanlıurfa</a> <a href="../../sirnak/">Şırnak</a> <a href="../../tekirdag/">Tekirdağ</a> <a href="../../tokat/">Tokat</a> <a href="../../trabzon/">Trabzon</a> <a href="../../tunceli/">Tunceli</a> <a href="../../usak/">Uşak</a> <a href="../../van/">Van</a> <a href="../../yalova/">Yalova</a> <a href="../../yozgat/">Yozgat</a> <a href="../../zonguldak/">Zonguldak</a></p></div>
   <div class="in legal"><p>Veri: kamumisafirhaneleri.com.tr il listeleri · <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap katkıcıları</a> (ODbL) · gezgin yorumları.
-  Bilgiler değişebilir; gitmeden önce tesisi arayıp sivil kabul ve fiyatı sor. Son güncelleme: 26 Ekim 2026.</p></div>
+  Bilgiler değişebilir; gitmeden önce tesisi arayıp sivil kabul ve fiyatı sor. Son güncelleme: 27 Ekim 2026.</p></div>
 </footer>
-<script src="../../assets/ara.js" data-root="../../" defer></script>
+<script src="../../assets/ara.js?v=09f2d27f" data-root="../../" defer></script>
 </body>
 </html>

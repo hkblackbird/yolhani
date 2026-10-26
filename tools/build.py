@@ -11,6 +11,7 @@ Kullanım:
 Alan adı alınınca adresi değiştirip yeniden çalıştırmak yeterli:
     python3 tools/build.py https://yolhani.com
 """
+import hashlib
 import html
 import json
 import math
@@ -25,15 +26,49 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs"
 BASE = (sys.argv[1] if len(sys.argv) > 1 else "https://hkblackbird.github.io/yolhani").rstrip("/")
-APP = "https://claude.ai/artifact/96B435W52N7zqGfSPT3tTZ"   # yorum ve puanların olduğu uygulama
 REPO = "https://github.com/hkblackbird/yolhani"
 TODAY = date.today()
+# Tarayıcı önbelleği eski stil/betik dosyasını tutmasın diye bağlantılara içerik özeti eklenir
+ASSET_V = hashlib.sha1(b"".join((ROOT / "tools" / f).read_bytes() for f in ("fonts.css", "site.css", "ara.js"))).hexdigest()[:8]
 GSV = "nefGFNmlp75A9iaJx1VpqBjrkocaucwtCmEYyNWSkT4"   # Google Search Console doğrulama kodu
 AYLAR = "Ocak Şubat Mart Nisan Mayıs Haziran Temmuz Ağustos Eylül Ekim Kasım Aralık".split()
 TODAY_TR = f"{TODAY.day} {AYLAR[TODAY.month - 1]} {TODAY.year}"
 
 data = json.loads((ROOT / "data" / "yolhani.json").read_text(encoding="utf-8"))
 CITIES = data["cities"]
+
+# ---------- Veri temizliği ----------
+# OSM'de bazı kayıtların adı aslında bir açıklama ("place for 2 tents") ya da kapandığını söylüyor ("geschlossen").
+CLOSED = re.compile(r"geschlossen|nicht mehr|strictly forbidden|verboten|\bclosed\b", re.I)
+DESCRIPTIVE = re.compile(r"^(place for|flat spot|level spot|wild camping|free camp|camping with|picnic tables|under trees|with bees|big!|"
+                         r"camp,|camp$|camping$|n camp$|peter$|small forest|piknik alanı|ücretsiz kamp alanı)", re.I)
+
+
+def tr_upper_first(s):
+    return ({"i": "İ", "ı": "I"}.get(s[0], s[0].upper()) + s[1:]) if s else s
+
+
+def tel_fmt(t):
+    d = re.sub(r"\D", "", t or "")
+    d = d[2:] if d.startswith("90") and len(d) == 12 else d
+    d = "0" + d if len(d) == 10 else d
+    return f"{d[:4]} {d[4:7]} {d[7:9]} {d[9:]}" if len(d) == 11 and d.startswith("0") else (t or "")
+
+
+for _c in CITIES.values():
+    keep = []
+    for _p in _c["places"]:
+        if CLOSED.search(_p["name"]):
+            continue
+        if DESCRIPTIVE.search(_p["name"].strip()):
+            desc = _p["name"].strip()
+            _p["name"] = f'{_p["ilce"] or _c["name"]} kamp noktası'
+            if desc.lower() not in ("camp", "camping", "big!", "peter", "n camp"):
+                _p["note"] = (_p["note"] + " " if _p["note"] else "") + f"OSM notu: “{desc}”"
+        _p["name"] = tr_upper_first(_p["name"].strip())
+        _p["tel"] = tel_fmt(_p["tel"])
+        keep.append(_p)
+    _c["places"] = keep
 KM_TYPES = {t["k"]: t for t in data["kmTypes"]}
 MAP = data["map"]
 LABELS = data["labels"]
@@ -103,6 +138,23 @@ def issue_url(title, body):
     return f"{REPO}/issues/new?title={quote(title)}&body={quote(body)}"
 
 
+# Ziyaretçi geri bildirimi (yorum, düzeltme, yeni yer) Google Form ile toplanır. tools/form.json yoksa
+# yorum ve yer ekleme bağlantıları gösterilmez, düzeltme GitHub'a gider. Biçim için README'ye bak.
+FORM = json.loads((ROOT / "tools" / "form.json").read_text(encoding="utf-8")) if (ROOT / "tools" / "form.json").exists() else None
+
+
+def feedback(kind, name="", city="", ilce="", page=""):
+    """kind: yorum | duzelt | ekle. Form yoksa yalnızca düzeltme için GitHub bağlantısı döner."""
+    if FORM:
+        f = FORM["entries"]
+        q = {f["tur"]: FORM["tur"][kind], f["ad"]: name, f["il"]: city, f["ilce"]: ilce, f["sayfa"]: page}
+        return FORM["url"] + "?usp=pp_url&" + "&".join(f"{k}={quote(v)}" for k, v in q.items() if v)
+    if kind == "duzelt":
+        return issue_url(f"Düzeltme: {name} ({city})" if name else "Bilgi düzeltme",
+                         (f"Yer: {name}\nİl: {city}\nİlçe: {ilce}\nSayfa: {page}\n\n" if name else "Hangi sayfa ve hangi yer?\n\n") + "Yanlış olan bilgi:\n\nDoğrusu:\n")
+    return None
+
+
 def neighbours(name, k=6):
     x0, y0, _ = LABELS[name]
     near = sorted(LABELS, key=lambda n: math.hypot(LABELS[n][0] - x0, LABELS[n][1] - y0))
@@ -151,10 +203,9 @@ def head(title, desc, path, ld=(), og=None, search=True, index=True):
 <link rel="icon" href="{rel}assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{rel}assets/apple-touch-icon.png">
 <link rel="manifest" href="{rel}manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="{rel}assets/site.css">
+<link rel="preload" href="{rel}assets/fonts/worksans-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{rel}assets/fonts/zillaslab-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{rel}assets/site.css?v={ASSET_V}">
 {lds}
 </head>
 <body>
@@ -188,15 +239,16 @@ def foot(rel):
       <li><a href="{rel}kamu-misafirhaneleri/">Kamu misafirhaneleri</a></li><li><a href="{rel}pansiyon-hostel/">Pansiyon ve hosteller</a></li></ul></div>
     <div><h2>Popüler iller</h2><ul>{pop}</ul></div>
     <div><h2>Yolhanı</h2><ul>
-      <li><a href="{rel}hakkinda/">Hakkında</a></li><li><a href="{APP}" rel="noopener">Puan ver ve yorum yaz</a></li>
-      <li><a href="{issue_url("Bilgi düzeltme", "Hangi sayfa ve hangi yer?\n\nDoğru bilgi:\n")}" rel="noopener">Hata bildir</a></li>
+      <li><a href="{rel}hakkinda/">Hakkında</a></li>
+      {f'<li><a href="{e(feedback("yorum"))}" rel="noopener">Yorum yaz</a></li><li><a href="{e(feedback("ekle"))}" rel="noopener">Yer öner</a></li>' if FORM else ""}
+      <li><a href="{e(feedback("duzelt"))}" rel="noopener nofollow">Hata bildir</a></li>
       <li><a href="{REPO}" rel="noopener">GitHub</a></li></ul></div>
   </div>
   <div class="in allcities"><h2>Tüm iller</h2><p>{allc}</p></div>
   <div class="in legal"><p>Veri: kamumisafirhaneleri.com.tr il listeleri · <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap katkıcıları</a> (ODbL) · gezgin yorumları.
   Bilgiler değişebilir; gitmeden önce tesisi arayıp sivil kabul ve fiyatı sor. Son güncelleme: {TODAY_TR}.</p></div>
 </footer>
-<script src="{rel}assets/ara.js" data-root="{rel}" defer></script>
+<script src="{rel}assets/ara.js?v={ASSET_V}" data-root="{rel}" defer></script>
 </body>
 </html>
 """
@@ -213,8 +265,7 @@ def place_card(p, city, rel="../"):
         tel = f'<a class="act" href="tel:+90{digits}">{icon("phone")}{e(p["tel"])}</a>'
     m = re.search(r"~([\d.]+) TL", p["note"])
     note = "" if m else p["note"]
-    fix = issue_url(f"Düzeltme: {p['name']} ({city})",
-                    f"Yer: {p['name']}\nİl: {city}\nİlçe: {p['ilce']}\n\nYanlış olan bilgi:\n\nDoğrusu:\n")
+    fix = feedback("duzelt", p["name"], city, p["ilce"], f"{BASE}/{PAGE[p['id']]}" if p["id"] in PAGE else "")
     text = " ".join([p["name"], p["ilce"], p["addr"], label]).lower()
     geo = f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' if p["lat"] else ""
     return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}" data-q="{e(text)}"{geo}
@@ -242,6 +293,17 @@ def place_ld(p, city):
     if p["lat"]:
         d["geo"] = {"@type": "GeoCoordinates", "latitude": p["lat"], "longitude": p["lon"]}
     return d
+
+
+def callout(review, add):
+    """'Burada kaldın mı?' kutusu; form yoksa hiç gösterilmez."""
+    if not review:
+        return ""
+    return f"""<section class="callout">
+      <div><h2>Burada kaldın mı?</h2><p>Ödediğin ücreti, temizliği ve sivil kabul edilip edilmediğini yaz; sonraki gezgin buna göre karar versin.
+      Listede olmayan bir yer biliyorsan <a href="{e(add)}" rel="noopener">öner</a>.</p></div>
+      <a class="btn" href="{e(review)}" rel="noopener">{icon("star")}Yorum yaz</a>
+    </section>"""
 
 
 # ---------- İl sayfası ----------
@@ -382,7 +444,6 @@ def city_page(key, c):
   <div class="hero-text">
     <h1>{e(loc)} ucuz konaklama</h1>
     <p class="lead">{e(" ".join(intro))}</p>
-    <p class="hero-link"><a href="{APP}#{key}" rel="noopener">{e(name)} için gezgin puanları ve yorumları →</a></p>
     <p class="updated">Son güncelleme {TODAY_TR}. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
   </div>
 </section>
@@ -404,11 +465,7 @@ def city_page(key, c):
     <section id="sss" class="faq"><h2>Sık sorulan sorular</h2>
     {"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
     </section>
-    <section class="callout">
-      <div><h2>Burada kaldın mı?</h2><p>Ödediğin ücreti, temizliği ve sivil kabul edilip edilmediğini yaz; sonraki gezgin buna göre karar versin.</p></div>
-      <a class="btn" href="{APP}#{key}" rel="noopener">{icon("star")}{e(name)} için puan ver</a>
-    </section>
-    <p class="addnew">Listede olmayan bir yer mi biliyorsun? <a href="{APP}#ekle" rel="noopener">Buradan ekle</a>; kontrol edildikten sonra siteye girer.</p>
+    {callout(feedback("yorum", city=name, page=f"{BASE}/{key}/"), feedback("ekle", city=name, page=f"{BASE}/{key}/"))}
   </div>
 </div>
 {FILTER_JS}
@@ -439,6 +496,10 @@ def home_page():
     hubs = "".join(f"""<a class="hub" href="{slug}/"><span class="ticon t-{ic}">{icon(ic)}</span>
       <b>{e(label)}</b><span>{num(grp[gk])} yer · 81 il</span></a>"""
                    for slug, gk, label, _, _, _ in HUBS for ic in [GROUPS[[g[0] for g in GROUPS].index(gk)][3]])
+    gcount = {kg: sum(1 for p in CITIES[kg[0]]["places"] if GROUP_OF.get(p["tk"], GROUPS[4])[0] == kg[1]) for kg in GPAGE}
+    glabel = {g[0]: g[1][0].lower() + g[1][1:] for g in GROUPS}
+    top = "".join(f'<li><a href="{GPAGE[kg]}">{e(CITIES[kg[0]]["name"])} {e(glabel[kg[1]])}</a><span>{n}</span></li>'
+                  for kg, n in sorted(gcount.items(), key=lambda x: -x[1])[:16])
     ld = [{"@context": "https://schema.org", "@type": "WebSite", "name": "Yolhanı", "url": f"{BASE}/", "inLanguage": "tr"},
           {"@context": "https://schema.org", "@type": "Organization", "name": "Yolhanı", "url": f"{BASE}/", "logo": f"{BASE}/assets/apple-touch-icon.png"}]
     body = f"""<section class="hero home">
@@ -454,6 +515,7 @@ def home_page():
 </section>
 <section><div class="sec-head"><h2>Ne tür bir yer arıyorsun?</h2></div><div class="hubs">{hubs}</div></section>
 <section id="iller"><div class="sec-head"><h2>İllere göre ucuz konaklama</h2></div><ul class="cities">{lis}</ul></section>
+<section><div class="sec-head"><h2>En çok seçenek olan listeler</h2></div><ul class="cities">{top}</ul></section>
 """
     return head(title, desc, "", ld, search=False) + body + foot("")
 
@@ -494,16 +556,17 @@ def about_page():
 <h2>Ne var?</h2>
 <p>81 ilde {num(total)} yer: {num(grp['ogretmenevi'])} öğretmenevi, {num(grp['misafirhane'] + grp['belediye'])} kamu misafirhanesi ve belediye tesisi, {num(grp['kamp'])} kamp alanı, {num(grp['pansiyon'])} pansiyon ve hostel.</p>
 <h2>Nasıl çalışır?</h2>
-<p>Kaldığın yeri <a href="{APP}" rel="noopener">uygulamada</a> puanla: genel, temizlik ve güvenlik. Ödediğin ücreti, sivil olarak kabul edilip edilmediğini ve yerin hâlâ açık olup olmadığını yaz. Uygunsuz yorumlar üç gezgin bildirince gizlenir.</p>
+<p>Kaldığın yerin sayfasındaki "Yorum yaz" ile ödediğin ücreti, sivil olarak kabul edilip edilmediğini ve temizliği yaz. Gelen yorumlar kontrol edildikten sonra siteye eklenir.</p>
 <h2>Bilgi hatalı mı?</h2>
-<p>Her yerin kartındaki "Düzelt" bağlantısıyla ya da <a href="{issue_url("Bilgi düzeltme", "Hangi sayfa ve hangi yer?\n\nDoğru bilgi:\n")}" rel="noopener">buradan</a> bildir. Düzeltmeler bir sonraki güncellemede siteye girer.</p>
+<p>Her yerin kartındaki "Düzelt" bağlantısıyla ya da <a href="{e(feedback("duzelt"))}" rel="noopener nofollow">buradan</a> bildir. Düzeltmeler bir sonraki güncellemede siteye girer.</p>
 <h2>Veri kaynakları</h2>
 <ul><li>Kamu misafirhaneleri: kamumisafirhaneleri.com.tr il listeleri</li>
 <li>Kamp alanları, pansiyon ve hosteller: <a href="https://www.openstreetmap.org/copyright" rel="noopener">© OpenStreetMap katkıcıları</a>, ODbL lisansı</li>
 <li>İl sınırları: tr-geojson (cihadturhan)</li>
 <li>Fiyat, temizlik ve sivil kabul bilgisi: gezgin yorumları</li></ul>
 <h2>Gizlilik</h2>
-<p>Bu site çerez kullanmaz, ziyaretçi takibi yapmaz ve kişisel veri toplamaz. Yazı tipleri Google Fonts'tan yüklenir.</p>
+<p>Bu site çerez kullanmaz, ziyaretçi takibi yapmaz ve kişisel veri toplamaz. "Kaydettiklerim" listesi yalnızca senin tarayıcında tutulur.
+Bir haritayı açtığında harita karoları OpenStreetMap sunucularından, harita kitaplığı cdnjs'den yüklenir.{" Yorum ve öneri formu Google Forms üzerinden çalışır." if FORM else ""}</p>
 </section>
 """
     return head("Hakkında | Yolhanı", "Yolhanı nedir, nasıl çalışır, veriler nereden geliyor ve hatalı bilgiyi nasıl bildirirsin.", "hakkinda/", og="yolhani") + body + foot("../")
@@ -703,7 +766,7 @@ def place_page(key, c, p):
           {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
               {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}]
     crumb_html = '<span>›</span>'.join(f'<a href="{u.replace(BASE + "/", "../../") or "../../"}">{e(n)}</a>' for n, u in crumbs[:-1]) + f"<span>›</span>{e(name)}"
-    fix = issue_url(f"Düzeltme: {name} ({city})", f"Yer: {name}\nİl: {city}\nİlçe: {p['ilce']}\n\nYanlış olan bilgi:\n\nDoğrusu:\n")
+    fix = feedback("duzelt", name, city, p["ilce"], f"{BASE}/{path}")
     dup = sum(1 for q in c["places"] if q["name"] == name and q["ilce"] == p["ilce"] and q["id"] in PAGE) > 1
     title = f"{name} ({where}{', ' + label if dup else ''}): Telefon, Adres, Sivil Kabul | Yolhanı"
     desc = (f"{name}, {where}. {label}." + (f" Telefon: {p['tel']}." if p["tel"] else "") + (f" Adres: {p['addr']}." if p["addr"] else "")
@@ -731,6 +794,7 @@ def place_page(key, c, p):
 <section class="faq"><h2>Sık sorulan sorular</h2>
 {"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
 </section>
+{callout(feedback("yorum", name, city, p["ilce"], f"{BASE}/{path}"), feedback("ekle", city=city, page=f"{BASE}/{path}"))}
 {MAP_JS if p["lat"] else ""}
 """
     return head(title, desc, path, ld, og=key) + body + foot("../../")
@@ -807,8 +871,10 @@ def main():
             if child.name != "og":
                 shutil.rmtree(child) if child.is_dir() else child.unlink()
     (OUT / "assets").mkdir(parents=True, exist_ok=True)
-    for f in ("site.css", "ara.js"):
-        shutil.copy(ROOT / "tools" / f, OUT / "assets" / f)
+    (OUT / "assets" / "site.css").write_text((ROOT / "tools" / "fonts.css").read_text(encoding="utf-8")
+                                             + (ROOT / "tools" / "site.css").read_text(encoding="utf-8"), encoding="utf-8")
+    shutil.copy(ROOT / "tools" / "ara.js", OUT / "assets" / "ara.js")
+    shutil.copytree(ROOT / "tools" / "fonts", OUT / "assets" / "fonts")
     for f in ("icon.svg", "apple-touch-icon.png", "icon-512.png"):
         if (ROOT / "tools" / f).exists():
             shutil.copy(ROOT / "tools" / f, OUT / "assets" / f)
