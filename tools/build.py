@@ -78,6 +78,7 @@ ICONS = {
     "search": '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
     "bookmark": '<path d="M6 3.5h12v17l-6-4.2-6 4.2z"/>',
     "map": '<path d="m3 6.5 6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/>',
+    "share": '<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="m8.2 10.8 7.6-4.1M8.2 13.2l7.6 4.1"/>',
     "arch": '<path d="M4 21V11a8 8 0 0 1 16 0v10"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/><path d="M2 21h20"/>',
 }
 SPRITE = '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' + "".join(
@@ -133,7 +134,7 @@ def head(title, desc, path, ld=(), og=None, search=True, index=True):
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
-<link rel="canonical" href="{e(url)}">{"" if index else chr(10) + '<meta name="robots" content="noindex">'}
+<link rel="canonical" href="{e(url)}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Yolhanı">
 <meta property="og:title" content="{e(title)}">
@@ -145,6 +146,7 @@ def head(title, desc, path, ld=(), og=None, search=True, index=True):
 <meta property="og:locale" content="tr_TR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#6b4426">
+<meta name="robots" content="{"max-image-preview:large" if index else "noindex"}">
 <meta name="google-site-verification" content="{e(GSV)}">
 <link rel="icon" href="{rel}assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{rel}assets/apple-touch-icon.png">
@@ -201,7 +203,7 @@ def foot(rel):
 
 
 # ---------- Yer kartı ----------
-def place_card(p, city):
+def place_card(p, city, rel="../"):
     g = GROUP_OF.get(p["tk"], GROUPS[4])
     label = p["badge"] or (KM_TYPES[p["tk"]]["label"] if p["tk"] in KM_TYPES else g[2])
     who = f'<span class="who {e(p["who"])}">{e(p["whoText"])}</span>' if p["whoText"] else ""
@@ -217,7 +219,7 @@ def place_card(p, city):
     geo = f' data-lat="{p["lat"]}" data-lon="{p["lon"]}"' if p["lat"] else ""
     return f"""<li class="place" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-who="{e(p["who"])}" data-q="{e(text)}"{geo}
   data-name="{e(p["name"])}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
-  <div class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h3>{e(p["name"])}</h3>
+  <div class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h3>{f'<a href="{rel}{PAGE[p["id"]]}">{e(p["name"])}</a>' if p["id"] in PAGE else e(p["name"])}</h3>
   <p class="meta">{e(label)}{f" · {e(p['ilce'])}" if p["ilce"] else ""}</p></div>
   <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="{e(p["name"])} kaydet">{icon("bookmark")}</button></div>
   {who}
@@ -230,7 +232,7 @@ def place_card(p, city):
 
 def place_ld(p, city):
     t = "Campground" if p["tk"] == "kamp" else "Hostel" if p["badge"] == "Hostel" else "LodgingBusiness"
-    d = {"@type": t, "name": p["name"], "address": {"@type": "PostalAddress", "addressRegion": city, "addressCountry": "TR"}}
+    d = {"@type": t, "name": p["name"], **({"url": f"{BASE}/{PAGE[p['id']]}"} if p["id"] in PAGE else {}), "address": {"@type": "PostalAddress", "addressRegion": city, "addressCountry": "TR"}}
     if p["ilce"]:
         d["address"]["addressLocality"] = p["ilce"]
     if p["addr"]:
@@ -360,7 +362,8 @@ def city_page(key, c):
             parts = [f'{KM_TYPES[t]["label"].replace(" misafirhanesi", "")} ~{num(KM_TYPES[t]["sivil"])} TL' for t, _ in avgs.most_common(4)]
             pnote = (f'<p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: {e(", ".join(parts))}\'den başlıyor. '
                      'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
-        secs.append(f'<section class="group" id="{gk}"><h2>{e(h)} <small>{len(items)}</small></h2>{pnote}'
+        more = f'<a class="more" href="{GSLUG[gk]}/">Ayrı sayfada aç →</a>' if (key, gk) in GPAGE else ""
+        secs.append(f'<section class="group" id="{gk}"><div class="ghead"><h2>{e(h)} <small>{len(items)}</small></h2>{more}</div>{pnote}'
                     f'<ul class="places">{"".join(place_card(p, name) for p in items)}</ul></section>')
 
     opts = "".join(f'<option value="{e(i)}">{e(i)} ({k})</option>' for i, k in sorted(ilceler.items(), key=lambda kv: tr_key(kv[0])))
@@ -463,7 +466,8 @@ def hub_page(slug, gk, label, title, tname, kmk):
     for k, c in sorted(CITIES.items(), key=lambda kv: tr_key(kv[1]["name"])):
         m = sum(1 for p in c["places"] if GROUP_OF.get(p["tk"], GROUPS[4])[0] == gk)
         if m:
-            rows.append(f'<li><a href="../{k}/#{gk}">{e(c["name"])}</a><span>{m}</span></li>')
+            u = GPAGE.get((k, gk), f"{k}/#{gk}")
+            rows.append(f'<li><a href="../{u}">{e(c["name"])}</a><span>{m}</span></li>')
     price = f"Kaynak sitenin 2026 ortalamasına göre sivil misafirler için gecelik ~{KM_TYPES.get(kmk, {}).get('sivil')} TL'den başlıyor." if KM_TYPES.get(kmk, {}).get("sivil") else ""
     desc = f"{label}: Türkiye'de {num(grp[gk])} yer, {len(rows)} il. Kimler kalabilir, nasıl yer ayırtılır, fiyatlar ve il il liste."
     facts = [("Kimler kalabilir?", t.get("whoText", "")), ("Nasıl ayırtılır?", t.get("book", "")), ("İpucu", t.get("tip", "")), ("Fiyat", price)]
@@ -530,9 +534,263 @@ def search_index():
     label = lambda p: p["badge"] or GROUP_OF.get(p["tk"], GROUPS[4])[2]
     types = sorted({label(p) for _, c in cities for p in c["places"]}, key=tr_key)
     ti = {t: i for i, t in enumerate(types)}
-    ps = [[p["name"], ci, p["ilce"], ti[label(p)], p["id"]]
+    ps = [[p["name"], ci, p["ilce"], ti[label(p)], p["id"], PAGE.get(p["id"], "")]
           for ci, (_, c) in enumerate(cities) for p in sorted(c["places"], key=lambda p: (tr_key(p["ilce"]), tr_key(p["name"])))]
     return json.dumps({"c": [[k, c["name"], COUNT[k]] for k, c in cities], "t": types, "p": ps}, ensure_ascii=False, separators=(",", ":"))
+
+
+# ---------- Yer sayfaları ve il-tür sayfaları ----------
+# "Akseki Öğretmenevi telefon", "Antalya öğretmenevleri" gibi aramalar için ayrı sayfalar.
+# Yer sayfası yalnızca telefonu, adresi ya da web sitesi olan yerler için üretilir; bilgisi sadece ad ve konumdan
+# ibaret olan yerler il sayfasındaki kartta kalır (içi boş sayfa üretmemek için).
+GSLUG = {"ogretmenevi": "ogretmenevleri", "kamp": "kamp-alanlari", "pansiyon": "pansiyon-hostel",
+         "belediye": "belediye-tesisleri", "misafirhane": "kamu-misafirhaneleri", "mensup": "polisevi-orduevi"}
+OSM = {}
+if (ROOT / "data" / "osm_tags.json").exists():
+    for el in json.loads((ROOT / "data" / "osm_tags.json").read_text(encoding="utf-8"))["elements"]:
+        OSM[f"https://www.openstreetmap.org/{el['type']}/{el['id']}"] = el.get("tags", {})
+
+
+def slugify(s):
+    s = (s or "").replace("İ", "i").replace("I", "ı").lower()
+    for a, b in zip("çğıöşüâîû", "cgiosuaiu"):
+        s = s.replace(a, b)
+    return re.sub(r"[^a-z0-9]+", "-", s).strip("-")[:70].strip("-") or "yer"
+
+
+def extras(p):
+    t = OSM.get(p["src"] or "", {})
+    out = {}
+    w = t.get("website") or t.get("contact:website")
+    if w and w.startswith("http"):
+        out["web"] = w
+    ia = t.get("internet_access")
+    if ia:
+        out["internet"] = "Yok" if ia == "no" else "Var (Wi-Fi)" if ia in ("wlan", "yes", "wifi") else "Var"
+    if t.get("fee") in ("yes", "no"):
+        out["fee"] = "Ücretli" if t["fee"] == "yes" else "Ücretsiz"
+    if t.get("opening_hours"):
+        out["hours"] = t["opening_hours"].replace("Mo", "Pzt").replace("Su", "Paz").replace("off", "kapalı")
+    return out
+
+
+PAGE = {}        # yer id → "il/slug/"
+GPAGE = {}       # (il, grup) → "il/grup-slug/"
+for key, c in CITIES.items():
+    used = set(GSLUG.values())
+    for p in sorted(c["places"], key=lambda p: tr_key(p["name"])):
+        if not (p["tel"] or p["addr"] or extras(p).get("web")):
+            continue
+        s = slugify(p["name"])
+        if s in used:
+            s = slugify(f"{p['name']} {p['ilce']}")
+        base, i = s, 2
+        while s in used:
+            s, i = f"{base}-{i}", i + 1
+        used.add(s)
+        PAGE[p["id"]] = f"{key}/{s}/"
+    cnt = Counter(GROUP_OF.get(p["tk"], GROUPS[4])[0] for p in c["places"])
+    for gk, n in cnt.items():
+        if n >= 2:
+            GPAGE[(key, gk)] = f"{key}/{GSLUG[gk]}/"
+
+
+def tinfo(p):
+    """Yerin türüne uyan genel bilgi (kimler kalabilir, nasıl ayırtılır, ipucu)."""
+    gk = GROUP_OF.get(p["tk"], GROUPS[4])[0]
+    if gk == "kamp":
+        park = re.search(r"Tabiat|Milli Park|Millî Park|Orman|Mesire", p["name"])
+        return TYPES.get("Tabiat parkı kamp alanları" if park else "Özel kamp alanları (camping)", {})
+    return TYPES.get({"ogretmenevi": "Öğretmenevleri", "pansiyon": "Hostel, pansiyon ve köy evleri",
+                      "mensup": "Orduevleri ve polisevleri"}.get(gk, "DSİ misafirhaneleri" if p["tk"] == "dsi" else "Belediye ve kamu misafirhaneleri"), {})
+
+
+def label_of(p):
+    return p["badge"] or (KM_TYPES[p["tk"]]["label"] if p["tk"] in KM_TYPES else GROUP_OF.get(p["tk"], GROUPS[4])[2])
+
+
+def tel_href(t):
+    return "tel:+90" + re.sub(r"\D", "", t).lstrip("0")
+
+
+MAP_JS = """<script>
+(() => {
+  const el = document.getElementById("yer-harita"); if (!el) return;
+  const go = () => {
+    const c = document.createElement("link"); c.rel = "stylesheet"; c.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"; document.head.append(c);
+    const j = document.createElement("script"); j.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+    j.onload = () => {
+      const ll = [+el.dataset.lat, +el.dataset.lon], m = L.map(el, { scrollWheelZoom: false }).setView(ll, 14);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(m);
+      L.circleMarker(ll, { radius: 9, weight: 3, color: "#fff", fillColor: "#6b4426", fillOpacity: 1 }).addTo(m);
+    };
+    document.head.append(j);
+  };
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: "200px" });
+    io.observe(el);
+  } else go();
+})();
+</script>"""
+
+
+def place_page(key, c, p):
+    name, city = p["name"], c["name"]
+    g = GROUP_OF.get(p["tk"], GROUPS[4])
+    label, ex, ti = label_of(p), extras(p), tinfo(p)
+    path = PAGE[p["id"]]
+    where = f"{p['ilce']}, {city}" if p["ilce"] and p["ilce"] not in (city, "Merkez") else city
+    avg = KM_TYPES.get(p["tk"], {}).get("sivil")
+    m = re.search(r"~([\d.]+) TL", p["note"])
+    note = "" if m else p["note"]
+
+    rows = [("Tür", e(label)), ("Kimler kalabilir", f'<span class="who {e(p["who"])}">{e(p["whoText"])}</span>' if p["whoText"] else "")]
+    rows.append(("Adres", e(p["addr"]) + (f"<br><small>{e(where)}</small>" if p["addr"] and where not in p["addr"] else "") if p["addr"] else e(where)))
+    if p["tel"]:
+        rows.append(("Telefon", f'<a href="{tel_href(p["tel"])}">{e(p["tel"])}</a>'))
+    if avg:
+        rows.append(("Gecelik fiyat", f"Sivil misafir için ~{num(avg)} TL'den <small>(Türkiye ortalaması, tesise göre değişir; kesin fiyatı telefonla sor)</small>"))
+    elif ex.get("fee"):
+        rows.append(("Ücret", e(ex["fee"])))
+    if ex.get("internet"):
+        rows.append(("İnternet", e(ex["internet"])))
+    if ex.get("hours"):
+        rows.append(("Açık olduğu zaman", e(ex["hours"])))
+    if ex.get("web"):
+        host = re.sub(r"^https?://(www\.)?", "", ex["web"]).split("/")[0]
+        rows.append(("Web sitesi", f'<a href="{e(ex["web"])}" rel="noopener nofollow">{e(host)}</a>'))
+    if note and not (ex.get("fee") and note.strip(" .") == ex["fee"]):
+        rows.append(("Not", e(note.replace(ex.get("fee", "") + ". ", "") if ex.get("fee") else note)))
+    dl = "".join(f"<div><dt>{k}</dt><dd>{v}</dd></div>" for k, v in rows if v)
+
+    # Yakındaki yerler: önce aynı ilçe, sonra aynı türden il içindekiler
+    others = [q for q in c["places"] if q["id"] != p["id"]]
+    near = [q for q in others if p["ilce"] and q["ilce"] == p["ilce"]]
+    near.sort(key=lambda q: (q["id"] not in PAGE, GROUP_OF.get(q["tk"], GROUPS[4])[0] != g[0], tr_key(q["name"])))
+    if len(near) < 6:
+        near += [q for q in others if q not in near and GROUP_OF.get(q["tk"], GROUPS[4])[0] == g[0] and q["id"] in PAGE][:6 - len(near)]
+    near = near[:6]
+    href = lambda q: "../../" + (PAGE[q["id"]] if q["id"] in PAGE else f"{key}/#p-{q['id']}")
+    near_html = "".join(f'<li><a href="{href(q)}">{e(q["name"])}</a><span>{e(label_of(q))}{" · " + e(q["ilce"]) if q["ilce"] else ""}</span></li>' for q in near)
+
+    who_ans = {
+        "open": f"Evet. {name} herkese açık bir {label.lower()}; sivil misafir kabul edilir.",
+        "prio": f"Öncelik {'öğretmenlerindir' if p['tk'] == 'ogr' else 'kurum ve kamu personelinindir'}; boş oda varsa sivil misafir de kabul edilebilir. "
+                f"Gitmeden önce {p['tel'] or 'tesisi'} {'numarasını arayıp' if p['tel'] else 'arayıp'} sivil kabul ve fiyatı sor.",
+        "closed": f"{name} çoğunlukla yalnızca mensuplarına ve yakınlarına açıktır. Mensup değilsen yakındaki öğretmenevi ve kamp alanlarına bak.",
+    }.get(p["who"], "")
+    faq = [(f"{name} sivil misafir kabul ediyor mu?", who_ans)]
+    if p["tel"]:
+        faq.append((f"{name} telefon numarası nedir?", f"{name} telefon numarası {p['tel']}. Rezervasyon ve boş oda için doğrudan bu numarayı arayabilirsin."))
+    faq.append((f"{name} nerede?", f"{name} {where} konumunda" + (f", adresi: {p['addr']}." if p["addr"] else ".")
+                + " Yol tarifi için sayfadaki Yol tarifi bağlantısını kullan."))
+    if avg:
+        faq.append((f"{name} gecelik fiyatı ne kadar?", f"Bu tesis için ayrı bir fiyat yayımlanmıyor. Kaynak sitenin 2026 Türkiye ortalamasına göre "
+                    f"{label.lower()} türünde sivil misafir için gecelik fiyat ~{num(avg)} TL'den başlıyor. Kesin fiyatı telefonla sor."))
+
+    ld_place = place_ld(p, city)
+    ld_place.update({"@context": "https://schema.org", "url": f"{BASE}/{path}"})
+    if ex.get("web"):
+        ld_place["sameAs"] = ex["web"]
+    crumbs = [("Yolhanı", f"{BASE}/"), (city, f"{BASE}/{key}/")]
+    if (key, g[0]) in GPAGE:
+        crumbs.append((g[1], f"{BASE}/{GPAGE[(key, g[0])]}"))
+    crumbs.append((name, f"{BASE}/{path}"))
+    ld = [ld_place,
+          {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+              {"@type": "ListItem", "position": i + 1, "name": n, "item": u} for i, (n, u) in enumerate(crumbs)]},
+          {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+              {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]}]
+    crumb_html = '<span>›</span>'.join(f'<a href="{u.replace(BASE + "/", "../../") or "../../"}">{e(n)}</a>' for n, u in crumbs[:-1]) + f"<span>›</span>{e(name)}"
+    fix = issue_url(f"Düzeltme: {name} ({city})", f"Yer: {name}\nİl: {city}\nİlçe: {p['ilce']}\n\nYanlış olan bilgi:\n\nDoğrusu:\n")
+    dup = sum(1 for q in c["places"] if q["name"] == name and q["ilce"] == p["ilce"] and q["id"] in PAGE) > 1
+    title = f"{name} ({where}{', ' + label if dup else ''}): Telefon, Adres, Sivil Kabul | Yolhanı"
+    desc = (f"{name}, {where}. {label}." + (f" Telefon: {p['tel']}." if p["tel"] else "") + (f" Adres: {p['addr']}." if p["addr"] else "")
+            + " Kimler kalabilir, ortalama fiyat, yol tarifi ve yakındaki diğer ucuz konaklama yerleri.")
+    geo = f'<div id="yer-harita" class="yermap" data-lat="{p["lat"]}" data-lon="{p["lon"]}" role="img" aria-label="{e(name)} konumu"></div>' if p["lat"] else ""
+    body = f"""<nav class="crumbs" aria-label="Konum">{crumb_html}</nav>
+<div class="layout yer" data-city="{key}" data-cityname="{e(city)}">
+<article class="place yerbox" id="p-{e(p["id"])}" data-ilce="{e(p["ilce"])}" data-name="{e(name)}" data-label="{e(label)}" data-tel="{e(p["tel"])}">
+  <header class="ph"><span class="ticon t-{g[3]}">{icon(g[3])}</span><div><h1>{e(name)}</h1>
+    <p class="meta">{e(label)} · {e(where)}</p></div>
+    <button class="save" type="button" aria-pressed="false" title="Kaydet" aria-label="{e(name)} kaydet">{icon("bookmark")}</button></header>
+  <div class="acts big">{f'<a class="btn" href="{tel_href(p["tel"])}">{icon("phone")}Ara</a>' if p["tel"] else ""}
+    <a class="btn ghost-d" href="{e(p["map"])}" rel="noopener">{icon("route")}Yol tarifi</a>
+    <button class="btn ghost-d" type="button" data-share>{icon("share")}<span>Paylaş</span></button></div>
+  <dl class="bilgi">{dl}</dl>
+  {geo}
+  <p class="updated-d">Son güncelleme {TODAY_TR}. Bilgi hatalıysa <a href="{e(fix)}" rel="noopener nofollow">düzelt</a>.</p>
+</article>
+<aside class="side yerside">
+  {f'<section class="tip"><h2>Nasıl yer ayırtılır?</h2><p>{e(ti["book"])}</p>' + (f'<p>{e(ti["tip"])}</p>' if ti.get("tip") else "") + "</section>" if ti.get("book") else ""}
+  <section class="near2"><h2>{e(p["ilce"] or city)} ve yakınında</h2><ul>{near_html}</ul>
+  <p><a href="../">{e(city)} için tüm yerler →</a></p></section>
+</aside>
+</div>
+<section class="faq"><h2>Sık sorulan sorular</h2>
+{"".join(f"<details><summary>{e(q)}</summary><p>{e(a)}</p></details>" for q, a in faq)}
+</section>
+{MAP_JS if p["lat"] else ""}
+"""
+    return head(title, desc, path, ld, og=key) + body + foot("../../")
+
+
+def group_page(key, c, gk):
+    g = next(x for x in GROUPS if x[0] == gk)
+    name, loc = c["name"], c["loc"]
+    items = sorted([p for p in c["places"] if GROUP_OF.get(p["tk"], GROUPS[4])[0] == gk],
+                   key=lambda p: (tr_key(p["ilce"] or "zzz"), tr_key(p["name"])))
+    n, label = len(items), g[1]
+    lab_l = label[0].lower() + label[1:]
+    path = GPAGE[(key, gk)]
+    ti = tinfo(items[0])
+    ilceler = Counter(p["ilce"] for p in items if p["ilce"] and p["ilce"] != "Merkez")
+    tels = sum(1 for p in items if p["tel"])
+    intro = f"{loc} {n} {g[2].lower() if gk != 'mensup' else 'mensup tesisi'} listeleniyor"
+    if ilceler and ilceler.most_common(1)[0][1] > 1:
+        intro += f"; en çok {', '.join(i for i, k in ilceler.most_common(3) if k > 1)} ilçelerinde."
+    else:
+        intro += f", {len(ilceler)} farklı ilçede." if len(ilceler) > 1 else "."
+    intro += f" {tels} tanesinin telefonu var." if tels else ""
+    avgs = Counter(p["tk"] for p in items if KM_TYPES.get(p["tk"], {}).get("sivil"))
+    pnote = ""
+    if avgs:
+        parts = [f'{KM_TYPES[t]["label"].replace(" misafirhanesi", "")} ~{num(KM_TYPES[t]["sivil"])} TL' for t, _ in avgs.most_common(4)]
+        pnote = (f'<p class="pnote">Sivil misafir için gecelik fiyat, Türkiye ortalaması: {e(", ".join(parts))}\'den başlıyor. '
+                 'Tesise göre değişir; kesin fiyatı telefonla sor. <span>Kaynak: kamumisafirhaneleri.com.tr, 2026.</span></p>')
+    others = "".join(f'<a href="../../{GPAGE[(key, x[0])]}">{e(x[1])}</a>' for x in GROUPS if x[0] != gk and (key, x[0]) in GPAGE)
+    title = f"{name} {lab_l if gk != 'mensup' else 'polisevi ve orduevleri'}: {n} yer, telefon ve adresler | Yolhanı"
+    title = title[0].upper() + title[1:]
+    desc = f"{loc} {n} {g[2].lower()}: adres, telefon, kimlerin kalabildiği ve ortalama fiyatlar. " + (f"{', '.join(i for i, _ in ilceler.most_common(3))} ve diğer ilçeler." if ilceler else "")
+    ld = [{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Yolhanı", "item": f"{BASE}/"},
+            {"@type": "ListItem", "position": 2, "name": name, "item": f"{BASE}/{key}/"},
+            {"@type": "ListItem", "position": 3, "name": label, "item": f"{BASE}/{path}"}]},
+          {"@context": "https://schema.org", "@type": "ItemList", "name": f"{name} {lab_l}", "numberOfItems": n,
+           "itemListElement": [{"@type": "ListItem", "position": i + 1, "url": f"{BASE}/{PAGE[p['id']]}" if p["id"] in PAGE else f"{BASE}/{key}/#p-{p['id']}",
+                                "name": p["name"]} for i, p in enumerate(items[:200])]}]
+    facts = [("Kimler kalabilir?", ti.get("whoText", "")), ("Nasıl ayırtılır?", ti.get("book", "")), ("İpucu", ti.get("tip", ""))]
+    body = f"""<nav class="crumbs" aria-label="Konum"><a href="../../">Yolhanı</a><span>›</span><a href="../">{e(name)}</a><span>›</span>{e(label)}</nav>
+<section class="hero city">
+  <div class="hero-text">
+    <h1>{e(name)} {e(lab_l if gk != "mensup" else "polisevi, orduevi ve adliye tesisleri")}</h1>
+    <p class="lead">{e(intro)}</p>
+    <p class="updated">Son güncelleme {TODAY_TR}. Fiyat ve kabul koşulları değişebilir; gitmeden önce tesisi ara.</p>
+  </div>
+</section>
+<section class="facts">{"".join(f'<div><h2>{e(q)}</h2><p>{e(a)}</p></div>' for q, a in facts if a)}</section>
+<div class="layout" data-city="{key}" data-cityname="{e(name)}">
+  <aside class="side">
+    <div class="near"><h2>{e(name)} içinde diğer türler</h2><div class="otypes">{others}<a href="../">Tüm yerler</a></div></div>
+  </aside>
+  <div class="content">
+    <section class="group" id="{gk}"><h2>{e(label)} <small>{n}</small></h2>{pnote}
+    <ul class="places">{"".join(place_card(p, name, "../../") for p in items)}</ul></section>
+  </div>
+</div>
+"""
+    return head(title, desc, path, ld, og=key) + body + foot("../../")
 
 
 # ---------- Üretim ----------
@@ -570,7 +828,15 @@ def main():
         urls.append((f"{h[0]}/", "0.8"))
     for key, c in CITIES.items():
         write(f"{key}/index.html", city_page(key, c))
-        urls.append((f"{key}/", "0.7"))
+        urls.append((f"{key}/", "0.8"))
+        for gk in GSLUG:
+            if (key, gk) in GPAGE:
+                write(f"{GPAGE[(key, gk)]}index.html", group_page(key, c, gk))
+                urls.append((GPAGE[(key, gk)], "0.7"))
+        for p in c["places"]:
+            if p["id"] in PAGE:
+                write(f"{PAGE[p['id']]}index.html", place_page(key, c, p))
+                urls.append((PAGE[p["id"]], "0.5"))
     write("sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
           + "".join(f"  <url><loc>{BASE}/{u}</loc><lastmod>{TODAY.isoformat()}</lastmod><priority>{pr}</priority></url>\n" for u, pr in urls)
           + "</urlset>\n")

@@ -36,7 +36,7 @@
   }
   const cityUrl = c => root + c[0] + "/";
   const ilceUrl = (c, il) => cityUrl(c) + "?ilce=" + encodeURIComponent(il);
-  const placeUrl = p => root + idx.c[p[1]][0] + "/#p-" + p[4];
+  const placeUrl = p => root + (p[5] || idx.c[p[1]][0] + "/#p-" + p[4]);
 
   for (const form of document.querySelectorAll("form.q")) {
     const inp = form.querySelector("input"), dd = form.querySelector(".dd");
@@ -128,3 +128,14 @@
   mark(); count();
   addEventListener("storage", () => { mark(); count(); if (list) render(); });
 })();
+
+// Paylaş: telefonda paylaşım menüsü, masaüstünde bağlantıyı kopyalar
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-share]"); if (!b) return;
+  const url = location.href.split("#")[0], title = document.title.split(" | ")[0];
+  try {
+    if (navigator.share) { await navigator.share({ title, url }); return; }
+    await navigator.clipboard.writeText(url);
+    const s = b.querySelector("span"), old = s.textContent; s.textContent = "Bağlantı kopyalandı"; setTimeout(() => s.textContent = old, 2000);
+  } catch {}
+});
