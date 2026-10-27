@@ -426,7 +426,7 @@ def foot(rel):
 def place_card(p, city, rel="../", show_who=True):
     g = GROUP_OF.get(p["tk"], GROUPS[4])
     label = p["badge"] or (KM_TYPES[p["tk"]]["label"] if p["tk"] in KM_TYPES else g[2])
-    who = f'<span class="who {e(p["who"])}">{e(p["whoText"])}</span>' if p["whoText"] and show_who else ""
+    who = f'<span class="who {e(p["who"])}">{e(p["whoText"])}</span>' if p["whoText"] and show_who and p["whoText"] != "Herkes" else ""
     tel = ""
     if p["tel"]:
         digits = re.sub(r"\D", "", p["tel"]).lstrip("0")
@@ -517,10 +517,11 @@ def city_page(key, c):
     # O ilin verisinden yazılan, her ilde farklı giriş metni
     intro = [f"{loc} otel yerine kalabileceğin {n} yer listeleniyor."]
     if top:
-        intro.append("En çok seçenek " + ", ".join(f"{i} ({k})" for i, k in top[:-1]) +
-                     (" ve " if len(top) > 1 else "") + f"{top[-1][0]} ({top[-1][1]}) ilçelerinde.")
+        intro.append("En çok seçenek " + (", ".join(i for i, _ in top[:-1]) + " ve " + top[-1][0] + " ilçelerinde."
+                                           if len(top) > 1 else locative(top[-1][0]) + "."))
     if cnt["ogretmenevi"]:
-        intro.append(f"{cnt['ogretmenevi']} öğretmenevi boş oda olduğunda sivil misafir de kabul edebilir.")
+        intro.append(f"{cnt['ogretmenevi']} öğretmenevi boş oda olduğunda sivil misafir de kabul edebilir." if cnt["ogretmenevi"] > 1
+                     else "İldeki öğretmenevi boş oda olduğunda sivil misafir de kabul edebilir.")
     if cnt["kamp"]:
         intro.append(f"{cnt['kamp']} kamp alanından {free} tanesi ücretsiz olarak işaretli." if free else f"{cnt['kamp']} kamp alanı var.")
     if c["note"]:
@@ -580,7 +581,7 @@ def city_page(key, c):
   <div class="content">
     <nav class="ilceler" aria-label="İlçeler"><h2>İlçeler</h2><p class="ilist">{ilce_links(key, c, "../")}</p></nav>
     <form class="filters" id="filters" hidden role="search" onsubmit="return false">
-      <label class="field">{icon("search")}<input id="f-q" type="search" placeholder="{e(name)} içinde ara: ad, ilçe, adres…" aria-label="Bu ilde ara"></label>
+      <label class="field">{icon("search")}<input id="f-q" type="search" placeholder="{e(name)} içinde yer ara" aria-label="Bu ilde ara"></label>
       <select id="f-ilce" aria-label="İlçe"><option value="">Tüm ilçeler</option>{opts}</select>
       <select id="f-kim" aria-label="Kimler kalabilir"><option value="">Herkes / tüm yerler</option><option value="sivil">Sivil kabul edebilir</option><option value="herkes">Yalnızca herkese açık</option></select>
       <button class="btn ghost-d" id="f-map" type="button" aria-expanded="false" aria-controls="harita">{icon("map")}<span>Haritada göster</span></button>

@@ -132,8 +132,7 @@ ul, ol { margin: 0; padding: 0; }
   .top-q { order: 2; flex: 1 1 100%; }
   .top nav { order: 3; width: 100%; margin: 0 -10px; padding-bottom: 2px; }
   .top { position: static; }
-  .filters { top: 0; }
-  html { scroll-padding-top: 70px; }
+  html { scroll-padding-top: 16px; }
 }
 
 /* Düğmeler */
@@ -224,7 +223,7 @@ section { display: grid; gap: 18px; }
 
 /* İl sayfası yerleşimi */
 .layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 36px; align-items: start; }
-.side { position: sticky; top: 84px; display: grid; gap: 22px; }
+.side { position: sticky; top: 84px; max-height: calc(100vh - 100px); overflow-y: auto; scrollbar-width: thin; overscroll-behavior: contain; display: grid; gap: 22px; }
 .side h2 { font-family: var(--body); font-size: .86rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
 .toc { display: grid; gap: 2px; }
 .toc a { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 9px; color: var(--fg); text-decoration: none; font-size: .92rem; }
@@ -238,14 +237,15 @@ section { display: grid; gap: 18px; }
 .content { display: grid; gap: 40px; }
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
-  .side { position: static; }
+  .side { position: static; max-height: none; overflow: visible; }
+  .side:not(.yerside) { display: none; }
   .toc { display: flex; flex-wrap: wrap; gap: 6px; }
   .toc h2 { width: 100%; }
   .toc a { background: var(--surface); border: 1px solid var(--line); }
   .near { display: none; }
 }
 
-.filters { position: sticky; top: 68px; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px; margin: -10px; background: var(--bg); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .filters select { font: inherit; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); max-width: 100%; }
 .count { font-size: .88rem; color: var(--muted); }
 
@@ -307,7 +307,6 @@ details p { color: var(--muted); padding-bottom: 16px; }
 @media (max-width: 760px) { .foot .cols { grid-template-columns: 1fr 1fr; } .foot .about { grid-column: 1 / -1; } }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
-@media (max-width: 860px) { .filters { top: 0; } }
 section.group[hidden] { display: none; }
 @media (max-width: 900px) {
   .toc { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -20px; padding-inline: 20px; }
