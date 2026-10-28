@@ -23,10 +23,10 @@ html { scroll-padding-top: 76px; -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
 a { color: var(--green); text-underline-offset: 2px; }
 h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.15; letter-spacing: -.005em; text-wrap: balance; margin: 0; }
-h1 { font-size: clamp(2rem, 5.2vw, 3.1rem); }
+h1 { font-size: clamp(2rem, 5.2vw, 3.1rem); letter-spacing: -.015em; line-height: 1.08; }
 h2 { font-size: clamp(1.3rem, 2.6vw, 1.6rem); }
 h3 { font-size: 1.08rem; }
-p { margin: 0; }
+p { margin: 0; text-wrap: pretty; }
 ul, ol { margin: 0; padding: 0; }
 .ic { width: 1.05em; height: 1.05em; flex: none; }
 :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
@@ -49,7 +49,7 @@ ul, ol { margin: 0; padding: 0; }
 @media (max-width: 860px) {
   .top .in { flex-wrap: wrap; padding-block: 8px; }
   .top-q { order: 2; flex: 1 1 100%; }
-  .top nav { order: 3; width: 100%; margin: 0 -10px; padding-bottom: 2px; }
+  .top nav { order: 3; width: 100%; margin: 0 -10px; padding-bottom: 2px; mask-image: linear-gradient(90deg, #000 85%, transparent); -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); }
   .top { position: static; }
   html { scroll-padding-top: 16px; }
 }
@@ -174,7 +174,7 @@ section { display: grid; gap: 18px; }
 .place:hover { border-color: color-mix(in srgb, var(--sign) 40%, var(--line)); }
 .place[hidden] { display: none; }
 .ph { display: flex; gap: 12px; align-items: flex-start; }
-.ph h3 { overflow-wrap: anywhere; }
+.ph h3 { overflow-wrap: anywhere; font-weight: 600; line-height: 1.25; letter-spacing: 0; }
 .meta { font-size: .85rem; color: var(--muted); margin-top: 2px; }
 .price { color: var(--fg); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .place:target { border-color: var(--sign); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sign) 22%, transparent); }
@@ -184,9 +184,9 @@ section { display: grid; gap: 18px; }
 .addr { display: flex; gap: 8px; font-size: .9rem; overflow-wrap: anywhere; }
 .addr .ic { margin-top: 4px; color: var(--muted); }
 .acts { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; border-top: 1px solid var(--line-2); font-size: .88rem; }
-.act { display: inline-flex; align-items: center; gap: 6px; color: var(--green); text-decoration: none; font-weight: 600; }
+.act { display: inline-flex; align-items: center; gap: 6px; color: var(--green); text-decoration: none; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .act:hover { text-decoration: underline; }
-.fix { margin-left: auto; color: var(--muted); font-size: .82rem; }
+.fix { margin-left: auto; color: var(--muted); }
 .fix:hover { color: var(--fg); }
 
 /* SSS ve bilgi kutuları */
@@ -365,7 +365,7 @@ body.filtering .showall { display: none; }
 .tablewrap { overflow-x: auto; }
 table.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .prices caption { text-align: left; color: var(--muted); font-size: .88rem; padding-bottom: 8px; }
-.prices th, .prices td { padding: 10px 12px; border-bottom: 1px solid var(--line-2); text-align: right; white-space: nowrap; }
+.prices th, .prices td { font-variant-numeric: tabular-nums; padding: 10px 12px; border-bottom: 1px solid var(--line-2); text-align: right; white-space: nowrap; }
 .prices thead th { font-size: .82rem; color: var(--muted); font-weight: 600; border-bottom-color: var(--line); }
 .prices th[scope="row"], .prices thead th:first-child { text-align: left; font-weight: 500; white-space: normal; }
 .prices th small { color: var(--muted); font-weight: 400; }
@@ -374,7 +374,7 @@ table.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 /* Yakınımdakiler */
 .near-app { display: grid; gap: 14px; }
 .near-ctl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
-.near-ctl select { font: inherit; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+.near-ctl select { max-width: 100%; min-width: 0; font: inherit; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
 .chk { display: inline-flex; align-items: center; gap: 8px; font-size: .95rem; }
 .near-list { list-style: none; display: grid; gap: 0; }
 .near-list li { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 4px 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-2); }
@@ -387,3 +387,4 @@ table.prices { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 @media (max-width: 600px) { .near-list li { grid-template-columns: 60px minmax(0, 1fr); } .near-list .acts { grid-column: 2; } }
 .geonote { font-size: .84rem; color: var(--muted); margin-top: -8px; }
 .maptools { display: flex; justify-content: flex-end; margin-bottom: -18px; }
+.near-app > * { min-width: 0; }
